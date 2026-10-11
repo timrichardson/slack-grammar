@@ -136,23 +136,15 @@ slack_grammar/
 
 ## Phases
 
-### Phase 0 — Spikes (de-risk before building anything)  ~half day
+### Phase 0 — Spikes (validate riskiest assumptions)  ~half day — **DONE 2026-10-12, all passed** (details: `docs/spike-notes.md`)
 
-1. **CDP into Slack**: run `slack --remote-debugging-port=9222`, connect, list
-   targets, `Page.addScriptToEvaluateOnNewDocument` a hello-world that adds a DOM
-   badge. Confirm Slack doesn't strip the flag and the renderer accepts injection.
-2. **Composer recon**: identify stable selectors/hooks for the message composer
-   (`div[contenteditable]`, `data-qa` attributes), how mentions/emoji render in the
-   DOM, and how multi-window/multi-workspace maps to CDP targets. Write findings to
-   `docs/selectors.md`.
-3. **Text replacement**: focus composer, select-all, `execCommand('insertText')`.
-   Verify: send button enables, draft persists across channel switch, Ctrl+Z undoes.
-4. **llama.cpp Vulkan on 9070 XT**: download prebuilt Vulkan release, run
-   Qwen3-4B-Instruct Q4_K_M, measure prompt+generation latency for a typical
-   correction (~30 words in, ~30 words out). Target: < 1.5 s on desktop.
-
-**Exit criteria:** all four spikes pass, or fallbacks are chosen (app.asar patch if
-CDP is blocked; clipboard-paste via CDP Input events if execCommand desyncs).
+1. **CDP into Slack**: ✅ flag honored, badge injected, one page target per window.
+2. **Composer recon**: ✅ Quill editor, `data-qa="texty_input"`, send button as
+   draft-state oracle (`docs/selectors.md`).
+3. **Text replacement**: ✅ selectAll+insertText syncs Slack state, undo works.
+4. **llama.cpp Vulkan on 9070 XT**: ✅ prebuilt b11559, Qwen3-4B Q4_K_M:
+   **64–202 ms per correction** (target <1.5 s), ~2.5 GB VRAM. One prompt failure
+   mode found (imperative messages get answered, not corrected) → Phase 1 work.
 
 ### Phase 1 — LLM service  ~1 day
 
@@ -168,7 +160,8 @@ CDP is blocked; clipboard-paste via CDP Input events if execCommand desyncs).
 - Gateway `/check`: hash cache, single-slot queue, stale-request cancellation,
   timeout (3 s) → respond "no correction" (never block or annoy).
 - `eval/`: ~60-sentence corpus (real typos, its/it's, code blocks, URLs, names,
-  emoji, multi-line, "already correct" texts that must come back unchanged).
+  emoji, multi-line, imperative messages that must be *corrected not answered*,
+  "already correct" texts that must come back unchanged).
   Runner scores accuracy + latency for 2–3 candidate models; pick the default from data.
 - systemd user unit: starts daemon (which starts llama-server) on login.
 
@@ -236,6 +229,7 @@ CDP is blocked; clipboard-paste via CDP Input events if execCommand desyncs).
 | Composer replacement desyncs editor state | Med | execCommand/insertText path validated in Phase 0; fallback: CDP clipboard paste; keep rich content out of scope for v1 |
 | 4B too slow on Xe3 iGPU | Med | Benchmark in Phase 1/4; config-driven downgrade to 1.7B; corrections are short outputs |
 | Model rewrites style / false positives | Med | Conservative prompt, "already correct" eval cases must return unchanged, per-diff magnitude threshold, easy Ignore |
+| Model *answers* imperative messages instead of correcting them (observed in spike) | High if unfixed | Reframed non-conversational prompt + few-shot incl. imperative example; server-side guardrail discards corrections whose diff-ratio vs input exceeds a threshold (return original) |
 | Vulkan quirks on RADV/ANV (fp16, coopmat) | Low | Pin known-good llama.cpp release; CPU fallback config |
 | Latency spikes while typing | Med | Debounce + cache + cancel stale; serial queue; warm slot; timeout → silent pass |
 
