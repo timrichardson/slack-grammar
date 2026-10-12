@@ -146,24 +146,24 @@ slack_grammar/
    **64–202 ms per correction** (target <1.5 s), ~2.5 GB VRAM. One prompt failure
    mode found (imperative messages get answered, not corrected) → Phase 1 work.
 
-### Phase 1 — LLM service  ~1 day
+### Phase 1 — LLM service  ~1 day — **DONE 2026-10-12** (60/60 eval, p50 75 ms)
 
-- `scripts/install-llama.sh`: pinned prebuilt llama.cpp Vulkan build (fallback:
-  source build with `-DGGML_VULKAN=1`).
-- `scripts/pull-model.sh`: fetch GGUF from Hugging Face. Default
-  `Qwen3-4B-Instruct-2507-Q4_K_M`; alternates pinned in config.
-- Prompt design (temperature 0, JSON mode off — plain text out):
-  system prompt = "fix grammar/spelling only; preserve formatting, mentions, emoji,
-  URLs, code blocks; change as little as possible; return the text only".
-  Token protection: replace @mentions/URLs/code spans with sentinel tokens before
-  the LLM call, restore after.
-- Gateway `/check`: hash cache, single-slot queue, stale-request cancellation,
-  timeout (3 s) → respond "no correction" (never block or annoy).
-- `eval/`: ~60-sentence corpus (real typos, its/it's, code blocks, URLs, names,
-  emoji, multi-line, imperative messages that must be *corrected not answered*,
-  "already correct" texts that must come back unchanged).
-  Runner scores accuracy + latency for 2–3 candidate models; pick the default from data.
-- systemd user unit: starts daemon (which starts llama-server) on login.
+- ✅ `scripts/install-llama.sh` (pinned b11559 + sha256), `scripts/pull-model.sh`
+  (Qwen3-4B Q4_K_M + sha256, alternate model slots).
+- ✅ Chat-style-preserving prompt (4 few-shot pairs incl. imperative + emoji
+  cases), temperature 0, prompt caching on llama-server.
+- ✅ Sentinel protection with URL trailing-punctuation handling; guardrail with
+  absolute-token + ratio thresholds and **line-wise salvage** for multiline.
+- ✅ Gateway `POST /check` on 127.0.0.1:8765: LRU cache, in-flight dedup,
+  single-slot serialization, timeout → original text. Structured logs without
+  message content.
+- ✅ `eval/`: 60-case corpus (12 categories), runner with per-tag scoring +
+  latency percentiles; gates at ≥85% and ≤1 false positive.
+- ✅ systemd user unit (`systemd/slack-grammar.service`; install.sh templates
+  paths in Phase 5).
+- Findings baked in: model wanted to normalize chat style (added periods,
+  capitalized/lowercased) — prompt rules now prioritize real fixes over style;
+  `,;` artifact around URLs was a protect-layer bug (URL regex ate commas).
 
 ### Phase 2 — Injector daemon  ~1–2 days
 

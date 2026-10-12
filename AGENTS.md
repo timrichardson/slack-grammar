@@ -10,7 +10,8 @@ desktop app. A daemon launches Slack with `--remote-debugging-port` and injects 
 JS bundle via the Chrome DevTools Protocol; the bundle watches the message
 composer, sends paused-typing text to a local `llama-server` (llama.cpp, Vulkan
 backend), and shows a one-click diff fix. Runs on AMD (RADV) and Intel Xe3 (ANV)
-GPUs. **Status: planning.** `PLAN.md` is the source of truth for architecture,
+GPUs. **Status: Phases 0–1 complete (spikes + LLM service); the CDP injector and
+in-Slack UI are next.** `PLAN.md` is the source of truth for architecture,
 phases, and decisions — read it before making design choices.
 
 ## Hard rules (non-negotiable)
@@ -30,13 +31,11 @@ phases, and decisions — read it before making design choices.
 
 ## Commands
 
-Not yet scaffolded (Phase 1 creates `daemon/` and `bundle/`). When they exist,
-the canonical commands are (keep updated as scaffolding lands):
-
 - Install deps: `bun install` (workspace root)
-- Dev daemon: `bun dev` — Lint: `bun run lint` — Typecheck: `bun run typecheck`
-- Tests: `bun test` — Build inject bundle: `bun run build:bundle`
+- Dev daemon: `bun run dev` — Lint: `bun run lint` — Typecheck: `bun run typecheck`
+- Tests: `bun test` — Eval suite (needs llama-server on :8080): `bun run eval`
 - Doctor: `bun run doctor`
+- Install llama.cpp / model: `scripts/install-llama.sh`, `scripts/pull-model.sh`
 
 ## Layout
 
