@@ -101,12 +101,11 @@ Architecture and decisions: [PLAN.md](PLAN.md) · agent/contributor guide: [AGEN
 
 ## Support
 
-This project currently does not accept external contributions: **pull requests
-from non-collaborators are blocked** (repository interaction limit), and issue
-creation is restricted by the same limit. Bug reports are still welcome via
-GitHub private vulnerability reporting for security issues (see
-[SECURITY.md](SECURITY.md)); for everything else, please email the maintainer
-(see profile). This may change if the project grows a maintainer team.
+This project currently does not accept external code contributions: **pull
+requests are disabled at the repository level** (a native GitHub setting).
+Issue reports from anyone are welcome — for security issues use private
+vulnerability reporting (see [SECURITY.md](SECURITY.md)) rather than public
+issues.
 
 ## License
 
