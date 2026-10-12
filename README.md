@@ -101,7 +101,12 @@ Architecture and decisions: [PLAN.md](PLAN.md) · agent/contributor guide: [AGEN
 
 ## Support
 
-Bug reports via GitHub issues. Feature requests welcome; read [CONTRIBUTING.md](CONTRIBUTING.md) first. Security issues via private vulnerability reporting, not public issues.
+This project currently does not accept external contributions: **pull requests
+from non-collaborators are blocked** (repository interaction limit), and issue
+creation is restricted by the same limit. Bug reports are still welcome via
+GitHub private vulnerability reporting for security issues (see
+[SECURITY.md](SECURITY.md)); for everything else, please email the maintainer
+(see profile). This may change if the project grows a maintainer team.
 
 ## License
 

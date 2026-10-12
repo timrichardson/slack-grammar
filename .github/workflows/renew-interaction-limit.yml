@@ -1,0 +1,23 @@
+name: renew-interaction-limit
+
+# GitHub offers no permanent "disable pull requests" for personal repos; the
+# interaction limit (collaborators_only) blocks non-collaborators from opening
+# PRs/issues but expires after at most six months. This job renews it monthly.
+on:
+  schedule:
+    - cron: "17 3 1 * *"
+  workflow_dispatch:
+
+permissions:
+  administration: write
+
+jobs:
+  renew:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Renew collaborators-only interaction limit
+        run: |
+          gh api -X PUT repos/${{ github.repository }}/interaction-limits \
+            -f limit=collaborators_only -f expiry=six_months
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
