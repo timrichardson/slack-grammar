@@ -81,6 +81,18 @@ for (const c of cases) {
 }
 
 const pass = rows.filter((r) => r.ok).length;
+// model-agnostic signals (accept-lists are tuned to a reference model's quirks;
+// these two work for any model): fix-recall and keep-precision
+const fixCases = cases.filter((c) => c.want === "fix");
+const keepCases = cases.filter((c) => c.want === "keep");
+const fixRecall = fixCases.filter((c) => {
+	const r = rows.find((x) => x.id === c.id);
+	return r !== undefined && r.output !== policyNorm(c.input, "fix");
+}).length;
+const keepPrecision = keepCases.filter((c) => {
+	const r = rows.find((x) => x.id === c.id);
+	return r !== undefined && r.output === policyNorm(c.input, "keep");
+}).length;
 const byTag = new Map<string, { total: number; pass: number }>();
 for (const r of rows) {
 	const t = byTag.get(r.tag) ?? { total: 0, pass: 0 };
@@ -104,6 +116,9 @@ for (const [tag, s] of [...byTag.entries()].sort()) {
 	);
 }
 console.log(`\nlatency ms: p50=${p(50)} p95=${p(95)} max=${latencies.at(-1)}`);
+console.log(
+	`model-agnostic: fix-recall ${fixRecall}/${fixCases.length} (${pct(fixRecall / fixCases.length)}), keep-precision ${keepPrecision}/${keepCases.length} (${pct(keepPrecision / keepCases.length)})`,
+);
 
 const failures = rows.filter((r) => !r.ok);
 if (failures.length > 0) {
