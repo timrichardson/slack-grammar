@@ -94,6 +94,7 @@ bun install
 bun run lint && bun run typecheck && bun test
 bun run build:bundle         # rebuild the injected bundle
 bun run eval                 # 60-case correction suite (needs llama-server up)
+bun run eval:jfleg           # public JFLEG benchmark (see docs/jfleg.md)
 ```
 
 Architecture and decisions: [PLAN.md](PLAN.md) · agent/contributor guide: [AGENTS.md](AGENTS.md)

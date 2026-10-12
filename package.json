@@ -13,6 +13,8 @@
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "eval": "bun run eval/run.ts",
+    "eval:jfleg": "bun run eval/jfleg.ts",
+    "eval:jfleg:setup": "python3 -m venv vendor/jfleg/venv && vendor/jfleg/venv/bin/pip install scipy",
     "build:bundle": "esbuild bundle/src/main.ts --bundle --format=iife --target=chrome120 --outfile=bundle/dist/slack-grammar-bundle.js"
   },
   "devDependencies": {
