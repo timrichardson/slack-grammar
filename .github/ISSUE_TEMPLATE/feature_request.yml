@@ -1,0 +1,46 @@
+name: Feature request
+description: An idea or improvement
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Note the project's scope rules before proposing (see
+        [PLAN.md](https://github.com/timrichardson/slack-grammar/blob/main/PLAN.md)):
+        local-only (no cloud), never breaks Slack, minimal-edit corrections,
+        permissive dependencies only.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: The pain, not the solution. If it's about correction quality, include a synthetic example (never real messages).
+      placeholder: "I keep typing X and it never catches Y…"
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered (including "config could already do this")
+      description: Many behaviors are tunable via ~/.config/slack-grammar/config.toml — see config/config.example.toml.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: ai-usage
+    attributes:
+      label: Did you use an AI assistant to write this request?
+      options:
+        - "No"
+        - "Yes — the problem is my own experience, the wording may be AI-assisted"
+        - "Yes — the whole request is agent-generated"
+    validations:
+      required: true

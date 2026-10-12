@@ -1,0 +1,104 @@
+name: Bug report
+description: A correction misbehaved, or something crashed
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Privacy rule:** never paste real Slack messages. Invent a *synthetic*
+        sentence that shows the same problem. Reports containing real message
+        content will be edited or closed.
+
+        **Using an AI assistant to file this?** Great — but the useful output is
+        verifiable artifacts, not prose. Give it this prompt:
+
+        > You are helping file a bug against slack-grammar (local grammar checker
+        > for Slack). Read https://github.com/timrichardson/slack-grammar/llms.txt
+        > and AGENTS.md first. Then: (1) write a SYNTHETIC input sentence that
+        > triggers the bug — never quote real messages; (2) state the exact output
+        > the tool produced and the output it should have produced, minimal-edit
+        > and chat-style-preserving per the project rules; (3) format it as an
+        > eval corpus case (one JSONL line: id, tag, want, input, accept[]) that
+        > would currently FAIL `bun run eval`; (4) list which commands from the
+        > README a human should run to confirm, and what to look for. Do not
+        > speculate beyond the observed behavior.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: One or two sentences, observed behavior only.
+      placeholder: "Corrected 'X' to 'Y' but should have been 'Z' / no widget appeared / daemon exited…"
+    validations:
+      required: true
+
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Environment — paste `slack-grammar doctor` output
+      description: Verifiable environment fingerprint; also covers versions.
+      render: shell
+      placeholder: |
+        ✓ vulkan: …
+        ✓ llama-server binary: …
+        …
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction — synthetic input, actual output, expected output
+      description: |
+        Copy the exact strings. Expected output must respect the project's
+        rules: minimal edits, chat style preserved (no added periods, no
+        re-capitalized sentences).
+      placeholder: |
+        input:    we should of tested it first
+        actual:   we should have tested it first.   (added a period)
+        expected: we should have tested it first
+    validations:
+      required: true
+
+  - type: textarea
+    id: corpus-case
+    attributes:
+      label: Reproducing test (drop-in eval corpus case)
+      description: |
+        Optional but hugely appreciated — one JSONL line in the format of
+        `eval/corpus.jsonl`. If provided, the maintainer can paste it into the
+        corpus and see the failure with `bun run eval`.
+      render: json
+      placeholder: |
+        {"id":"sugg1","tag":"should-of","want":"fix","input":"…","accept":["…"]}
+
+  - type: dropdown
+    id: ai-usage
+    attributes:
+      label: Did you use an AI assistant to investigate or write this report?
+      options:
+        - "No"
+        - "Yes — I verified everything below myself"
+        - "Yes — partially verified"
+    validations:
+      required: true
+
+  - type: textarea
+    id: verified
+    attributes:
+      label: What did you verify yourself?
+      description: |
+        Which commands did you run and what did you see? (e.g. "ran
+        `slack-grammar doctor`, all green; typed the input in Slack, widget
+        appeared with the output above"). Concrete steps only.
+      placeholder: "I ran … and saw …"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy attestation
+      options:
+        - label: The input above is synthetic — it contains no real message content from any workspace.
+          required: true
