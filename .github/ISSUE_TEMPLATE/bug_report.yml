@@ -1,5 +1,6 @@
 name: Bug report
 description: A correction misbehaved, or something crashed
+title: "[bug] "
 labels: [bug]
 body:
   - type: markdown
@@ -12,16 +13,32 @@ body:
         **Using an AI assistant to file this?** Great — but the useful output is
         verifiable artifacts, not prose. Give it this prompt:
 
-        > You are helping file a bug against slack-grammar (local grammar checker
-        > for Slack). Read https://github.com/timrichardson/slack-grammar/llms.txt
-        > and AGENTS.md first. Then: (1) write a SYNTHETIC input sentence that
-        > triggers the bug — never quote real messages; (2) state the exact output
-        > the tool produced and the output it should have produced, minimal-edit
-        > and chat-style-preserving per the project rules; (3) format it as an
-        > eval corpus case (one JSONL line: id, tag, want, input, accept[]) that
-        > would currently FAIL `bun run eval`; (4) list which commands from the
-        > README a human should run to confirm, and what to look for. Do not
-        > speculate beyond the observed behavior.
+        > You are helping file a bug against slack-grammar (a local grammar
+        > checker for Slack). First read
+        > https://github.com/timrichardson/slack-grammar/llms.txt and AGENTS.md
+        > (especially the hard rules: minimal edits, chat-style preservation —
+        > no added final periods, no re-capitalized sentences; synthetic text
+        > only). Then produce: (1) a SYNTHETIC input sentence triggering the
+        > bug — never quote real messages; (2) the exact output the tool
+        > produced, and the expected output under those rules; (3) one JSONL
+        > eval-corpus line (fields: id, tag, want, input, accept[]) that would
+        > currently FAIL `bun run eval`; (4) the exact commands a human should
+        > run to confirm, and what to look for. Report only observed behavior —
+        > no speculation.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Correction quality (wrong / missed / over-aggressive fix)
+        - Suggestion card / UI in Slack
+        - Daemon, injector, or gateway
+        - Install / setup / systemd
+        - Performance / latency
+        - Other
+    validations:
+      required: true
 
   - type: textarea
     id: what-happened
@@ -29,6 +46,20 @@ body:
       label: What happened?
       description: One or two sentences, observed behavior only.
       placeholder: "Corrected 'X' to 'Y' but should have been 'Z' / no widget appeared / daemon exited…"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: Does it reproduce?
+      description: >-
+        Checks are deterministic at temperature 0 — "sometimes" usually points
+        to a caching or timing issue, which is a useful clue in itself.
+      options:
+        - Every time
+        - Sometimes
+        - Once, haven't retried
     validations:
       required: true
 
