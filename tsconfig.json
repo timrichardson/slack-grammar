@@ -9,8 +9,9 @@
     "noImplicitOverride": true,
     "verbatimModuleSyntax": true,
     "types": ["bun"],
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["daemon/**/*.ts", "eval/**/*.ts", "bunfig.toml"]
+  "include": ["daemon/**/*.ts", "eval/**/*.ts", "bundle/**/*.ts", "bunfig.toml"]
 }

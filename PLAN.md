@@ -182,19 +182,25 @@ slack_grammar/
   spaces instead of NUL separators — process detection splits on both; pid-file
   removal is pid-conditional to survive daemon restart races.
 
-### Phase 3 — In-Slack UX (the bundle)  ~2–3 days
+### Phase 3 — In-Slack UX (the bundle)  ~2–3 days — **DONE 2026-10-12** (core, verified live)
 
-- Composer watcher: input events + MutationObserver; debounce ~1 s idle; skip if
-  < 3 words, empty, or caret inside a code block; skip text ending in `:` (commands).
-- Floating widget near composer, only when the diff is non-empty:
-  original → corrected with word-level highlights; `[Apply] [Ignore] [Dismiss]`.
-  Ignore suppresses re-checks of the same text for the session.
-- Apply = Phase-0-validated replacement path; keep a pre-apply snapshot for a
-  one-step restore.
-- Status glyph (idle/checking/ready/error/offline) + global on/off toggle hotkey;
-  config: language, debounce, aggressiveness (conservative default: only clear errors).
-- Graceful degradation: if selectors feature-detect fails after a Slack update,
-  disable silently and surface it in `doctor` + logs — never break Slack itself.
+- ✅ Composer watcher: delegated input events (survives channel switches — the
+  composer element is recreated constantly), ~1 s typing-pause debounce, stale
+  result discard, single-flight. Skip rules: too short, slash-commands,
+  trailing `:`, open code fences, caret in code, session-ignored texts.
+- ✅ Floating widget: Shadow-DOM isolated card above the composer; word-level
+  diff (del strike-through / ins highlight); Apply / Ignore / Dismiss; Esc
+  dismisses; mousedown-guard keeps composer focus so Ctrl+Z works after Apply.
+- ✅ Apply path: Phase-0-validated `selectAll`+`insertText`; empty-correction
+  guard (never eat the text); applied text auto-ignored (no check loops);
+  "✓ applied — Ctrl+Z to undo" flash.
+- ✅ Status glyph (checking pulse / error) + **Ctrl+Shift+G** enable toggle.
+- ✅ Live e2e in real Slack: typo text → widget with diff → Apply → composer
+  corrected + send button enabled + no re-check; clean text → no widget.
+- ✅ Bundle version guard: a newer bundle takes over a loaded page in place
+  (daemon restart deploys without a Slack reload).
+- Deferred to Phase 5 polish: config plumbing (debounce/minWords come from the
+  daemon), thread/huddle composer filtering by aria-label, i18n hook.
 
 ### Phase 4 — Panther Lake laptop bring-up  ~half day (when hardware available)
 

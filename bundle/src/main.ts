@@ -1,12 +1,24 @@
-// slack-grammar injected bundle — Phase 2: transport layer.
-// Talks to the daemon exclusively through the CDP binding (no network).
-// Phase 3 layers the composer watcher + diff UI on top of __sg.call().
+// slack-grammar injected bundle.
+// Transport: CDP binding only (no network from Slack's page).
+// UX: composer watcher + floating diff widget.
+
+import { startWatcher } from "./composer.ts";
 
 declare global {
 	interface Window {
 		__slackGrammar?: (payload: string) => void;
 		__slackGrammarReceive?: (payload: string) => void;
-		__sg?: SgBridge;
+		__sg?: {
+			call(type: string, text?: string): Promise<unknown>;
+			connected: boolean;
+			version?: string;
+			watcher?: {
+				enabled: boolean;
+				checks: number;
+				applied: number;
+				lastOutcome?: string;
+			};
+		};
 	}
 }
 
@@ -18,15 +30,17 @@ interface ProtocolMessage {
 	error?: string;
 }
 
-interface SgBridge {
-	call(type: string, text?: string): Promise<unknown>;
-	connected: boolean;
-}
+const BUNDLE_VERSION = "3.0.0";
 
 (() => {
-	if (window.__sg) return; // double-injection guard (new document + manual eval)
+	const w = window as Window & { __sgBundleVersion?: string };
+	if (w.__sgBundleVersion === BUNDLE_VERSION) return; // same version: no double-inject
+	w.__sgBundleVersion = BUNDLE_VERSION; // newer version: take over from an older bundle
 
-	const pending = new Map<string, { resolve: (v: unknown) => void; reject: (e: Error) => void }>();
+	const pending = new Map<
+		string,
+		{ resolve: (v: unknown) => void; reject: (e: Error) => void }
+	>();
 	let seq = 0;
 
 	window.__slackGrammarReceive = (payload: string) => {
@@ -46,7 +60,6 @@ interface SgBridge {
 		new Promise((resolve, reject) => {
 			const id = `sg${++seq}`;
 			pending.set(id, { resolve, reject });
-			// timeout: never leave the UI hanging if the daemon is gone
 			setTimeout(() => {
 				if (pending.has(id)) {
 					pending.delete(id);
@@ -56,17 +69,27 @@ interface SgBridge {
 			window.__slackGrammar?.(JSON.stringify({ v: 1, id, type, text }));
 		});
 
-	const bridge: SgBridge = {
+	const bridge: NonNullable<Window["__sg"]> = {
 		call,
 		connected: false,
+		version: BUNDLE_VERSION,
 	};
 	window.__sg = bridge;
 
-	// announce ourselves; proves the full binding round-trip on every page load
 	call("hello")
 		.then(() => {
 			bridge.connected = true;
+			// UX layer starts only once the daemon answered — fail soft, never break Slack
+			try {
+				bridge.watcher = startWatcher(bridge);
+			} catch (e) {
+				console.info(
+					`[slack-grammar] watcher failed to start: ${(e as Error).message}`,
+				);
+			}
 			console.info("[slack-grammar] bridge ready");
 		})
-		.catch((e: Error) => console.info(`[slack-grammar] bridge offline: ${e.message}`));
+		.catch((e: Error) =>
+			console.info(`[slack-grammar] bridge offline: ${e.message}`),
+		);
 })();
