@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   close:
-    if: github.event.pull_request.author_association != 'COLLABORATOR' && github.event.pull_request.author_association != 'OWNER'
+    if: github.event.pull_request.user.login != 'dependabot[bot]' && github.event.pull_request.author_association != 'COLLABORATOR' && github.event.pull_request.author_association != 'OWNER'
     runs-on: ubuntu-latest
     steps:
       - name: Close pull request
