@@ -38,13 +38,21 @@ bun run eval:jfleg -- --all     # full 1,501 sentences
 
 Full set, 1,501 sentences + 100 reference probes:
 
-| metric | value |
-|---|---|
-| improved toward reference | 45.1% |
-| unchanged | 38.3% (incl. 10 guardrail-held, 4 skipped-short) |
-| harmed | 16.6% |
-| reference sentences changed | 36% (reviewed: overwhelmingly legitimate fixes of learner-style refs, no breakage) |
-| latency | p50 130 ms, p95 262 ms |
+| metric | dev | test |
+|---|---|---|
+| improved toward reference | 45.1% (both sets combined) | — |
+| unchanged | 38.3% (incl. 10 guardrail-held, 4 skipped-short) | — |
+| harmed | 16.6% | — |
+| reference sentences changed | 36% (reviewed: overwhelmingly legitimate fixes of learner-style refs, no breakage) | — |
+| GLEU (detokenized, raw) | 0.524 | 0.583 |
+| GLEU (detokenized, style-normalized) | 0.529 | 0.587 |
+| latency | p50 130 ms, p95 263 ms | — |
+
+Leaderboard context (tokenized text, so indicative only): SOURCE baseline
+38.2/40.5, REFERENCE (human inter-annotator) 55.3/62.4, best published GEC
+systems ~60/65. A 4B local model with a deliberately conservative,
+minimal-edit prompt sits between the baseline and near-human references —
+the style-preservation rules cost only ~0.005 GLEU (raw vs normalized).
 
 Notes:
 

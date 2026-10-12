@@ -287,24 +287,13 @@ console.log(
 
 // GLEU on detokenized data (internally consistent; not leaderboard-comparable —
 // the leaderboard scores tokenized text). Hypotheses are our natural output.
-const writeHyp = (transform: (s: string) => string) => {
-	const bySet = new Map<string, string[]>();
-	// keep original corpus order so hyp lines align with the src file
-	for (const r of [...rows].sort((a, b) =>
-		a.set === b.set ? a.idx - b.idx : 0,
-	)) {
-		const list = bySet.get(r.set) ?? [];
-		list.push(transform(r.out));
-		bySet.set(r.set, list);
-	}
-	return bySet;
-};
 
 {
-	// materialize detok refs + sampled/full detok src once per set
+	// materialize detok refs + src; hyp files use the identical chosen-row order
 	const detokDir = join(VENDOR, "detok");
 	mkdirSync(detokDir, { recursive: true });
 	const srcPaths = new Map<string, string>();
+	const chosenBySet = new Map<string, Row[]>();
 	for (const name of ["dev", "test"] as const) {
 		const { src, refs } = loadSet(name);
 		for (let i = 0; i < 4; i++) {
@@ -313,9 +302,12 @@ const writeHyp = (transform: (s: string) => string) => {
 				`${refs.map((r) => (r[i] as string) ?? "").join("\n")}\n`,
 			);
 		}
+		// idx order within a single set — consistent comparator, safe
 		const chosen = [...rows.filter((r) => r.set === name)].sort(
 			(a, b) => a.idx - b.idx,
 		);
+		if (chosen.length === 0) continue;
+		chosenBySet.set(name, chosen);
 		const srcFile =
 			chosen.length === src.length
 				? join(detokDir, `${name}.src`)
@@ -327,17 +319,42 @@ const writeHyp = (transform: (s: string) => string) => {
 		["GLEU detok, raw", (s: string) => s],
 		["GLEU detok, style-normalized", formalize],
 	] as const) {
-		for (const [set, outs] of writeHyp(transform)) {
-			const hypPath = join(
-				detokDir,
-				`${set}.hyp.${transform === formalize ? "formal" : "raw"}`,
+		for (const [set, chosen] of chosenBySet) {
+			const { src } = loadSet(set as "dev" | "test");
+			if (chosen.length !== src.length) {
+				// gleu.py aligns references by line number — sample subsets can't score
+				console.log(
+					`${label} (${set}): skipped (sample mode; use --all for GLEU)`,
+				);
+				continue;
+			}
+			const variant = transform === formalize ? "formal" : "raw";
+			const hypPath = join(detokDir, `${set}.hyp.${variant}`);
+			writeFileSync(
+				hypPath,
+				`${chosen.map((r) => transform(r.out)).join("\n")}\n`,
 			);
-			writeFileSync(hypPath, `${outs.join("\n")}\n`);
 			const score = gleu(set, hypPath, srcPaths.get(set) as string, detokDir);
 			console.log(`${label} (${set}): ${score ?? "n/a (gleu.py failed)"}`);
 		}
 	}
 }
+
+// persist rows for offline re-scoring (public benchmark text; vendor/ is gitignored)
+writeFileSync(
+	join(VENDOR, "detok", "rows.json"),
+	JSON.stringify(
+		rows.map(({ set, idx, src, out, refs, ms, skipped, guardrailed }) => ({
+			set,
+			idx,
+			src,
+			out,
+			ref: refs[0],
+			ms,
+			note: skipped ? "skipped" : guardrailed ? "guardrail" : "ok",
+		})),
+	),
+);
 
 if (worst.length > 0) {
 	console.log("\nworst regressions (style-aware metric):");
