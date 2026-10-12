@@ -1,0 +1,60 @@
+{"id":"sp1","tag":"spelling","want":"fix","input":"i definately think we shoud of went with the second option","accept":["I definitely think we should have gone with the second option.","I definitely think we should have went with the second option."]}
+{"id":"sp2","tag":"spelling","want":"fix","input":"their going to send the report tommorow","accept":["They're going to send the report tomorrow."]}
+{"id":"sp3","tag":"spelling","want":"fix","input":"we recieved the seperate files yesterday","accept":["We received the separate files yesterday."]}
+{"id":"sp4","tag":"spelling","want":"fix","input":"this is definately a wierd bug","accept":["This is definitely a weird bug."]}
+{"id":"sp5","tag":"spelling","want":"fix","input":"the error occured because we didnt accomodate the timezone","accept":["The error occurred because we didn't accommodate the timezone."]}
+{"id":"sp6","tag":"spelling","want":"fix","input":"its a neccessary change","accept":["It's a necessary change."]}
+{"id":"sp7","tag":"spelling","want":"fix","input":"i cant find the recieved invoice","accept":["I can't find the received invoice."]}
+{"id":"sp8","tag":"spelling","want":"fix","input":"please seperate the concerns","accept":["Please separate the concerns."]}
+{"id":"h1","tag":"homophone","want":"fix","input":"the team lost they're momentum","accept":["The team lost their momentum."]}
+{"id":"h2","tag":"homophone","want":"fix","input":"your going to love this","accept":["You're going to love this."]}
+{"id":"h3","tag":"homophone","want":"fix","input":"its to late to revert now","accept":["It's too late to revert now."]}
+{"id":"h4","tag":"homophone","want":"fix","input":"there not going to like this","accept":["They're not going to like this."]}
+{"id":"h5","tag":"homophone","want":"fix","input":"i think its fine","accept":["I think it's fine."]}
+{"id":"h6","tag":"homophone","want":"fix","input":"your the best, thanks for you're help","accept":["You're the best, thanks for your help."]}
+{"id":"so1","tag":"should-of","want":"fix","input":"we should of tested it first","accept":["We should have tested it first."]}
+{"id":"so2","tag":"should-of","want":"fix","input":"i could of sworn it worked","accept":["I could have sworn it worked."]}
+{"id":"so3","tag":"should-of","want":"fix","input":"that would of been a disaster","accept":["That would have been a disaster."]}
+{"id":"sv1","tag":"subject-verb","want":"fix","input":"we was thinking about moving the meeting","accept":["We were thinking about moving the meeting."]}
+{"id":"sv2","tag":"subject-verb","want":"fix","input":"he dont know about the change yet","accept":["He doesn't know about the change yet."]}
+{"id":"sv3","tag":"subject-verb","want":"fix","input":"the logs shows the error clearly","accept":["The logs show the error clearly."]}
+{"id":"sv4","tag":"subject-verb","want":"fix","input":"there is three options on the table","accept":["There are three options on the table."]}
+{"id":"t1","tag":"tense","want":"fix","input":"i seen the alert this morning","accept":["I saw the alert this morning.","I've seen the alert this morning."]}
+{"id":"t2","tag":"tense","want":"fix","input":"she has wrote the postmortem already","accept":["She has written the postmortem already."]}
+{"id":"t3","tag":"tense","want":"fix","input":"we runned the migration last night","accept":["We ran the migration last night."]}
+{"id":"p1","tag":"punctuation","want":"fix","input":"what time is the standup","accept":["What time is the standup?"]}
+{"id":"p2","tag":"punctuation","want":"fix","input":"can you send me the file","accept":["Can you send me the file?"]}
+{"id":"p3","tag":"punctuation","want":"fix","input":"its ready, lets ship it","accept":["It's ready, let's ship it."]}
+{"id":"im1","tag":"imperative","want":"fix","input":"can you review the docs when you get a chance, its not urgent","accept":["Can you review the docs when you get a chance? It's not urgent.","Can you review the docs when you get a chance, it's not urgent."]}
+{"id":"im2","tag":"imperative","want":"fix","input":"please send me the report when your done","accept":["Please send me the report when you're done."]}
+{"id":"im3","tag":"imperative","want":"fix","input":"let me know if your coming to the offsite","accept":["Let me know if you're coming to the offsite."]}
+{"id":"im4","tag":"imperative","want":"fix","input":"can we get on a call later today","accept":["Can we get on a call later today?"]}
+{"id":"im5","tag":"imperative","want":"fix","input":"ping me when your back from lunch","accept":["Ping me when you're back from lunch."]}
+{"id":"k1","tag":"keep","want":"keep","input":"The report is ready for review.","accept":[]}
+{"id":"k2","tag":"keep","want":"keep","input":"I'll take a look at this after standup.","accept":[]}
+{"id":"k3","tag":"keep","want":"keep","input":"Here are the files you asked for.","accept":[]}
+{"id":"k4","tag":"keep","want":"keep","input":"kubectl get pods -n staging","accept":[]}
+{"id":"k5","tag":"keep","want":"keep","input":"Deploying to production now","accept":[]}
+{"id":"k6","tag":"keep","want":"keep","input":"Landed in main. Feel free to review.","accept":[]}
+{"id":"k7","tag":"keep","want":"keep","input":"The API's response time improved after the cache change.","accept":[]}
+{"id":"k8","tag":"keep","want":"keep","input":"No rush on this one","accept":[]}
+{"id":"m1","tag":"mention","want":"fix","input":"@tim can you look at this tommorow","accept":["@tim can you look at this tomorrow","@tim Can you look at this tomorrow?","@tim can you look at this tomorrow?"]}
+{"id":"m2","tag":"mention","want":"fix","input":":tada: were finaly live","accept":[":tada: we're finally live",":tada: We're finally live."]}
+{"id":"m3","tag":"mention","want":"fix","input":"thanks @priya your a legend","accept":["thanks @priya you're a legend","Thanks @priya, you're a legend."]}
+{"id":"m4","tag":"mention","want":"fix","input":"@channel the maintenence window starts at 2am","accept":["@channel the maintenance window starts at 2am","@channel The maintenance window starts at 2am.","@channel the maintenance window starts at 2 AM"]}
+{"id":"m5","tag":"mention","want":"fix","input":"ill ping @sam when hes online","accept":["I'll ping @sam when he's online."]}
+{"id":"u1","tag":"url","want":"fix","input":"check https://example.com/dashboard?id=42 for the metrics","accept":["Check https://example.com/dashboard?id=42 for the metrics","check https://example.com/dashboard?id=42 for the metrics"]}
+{"id":"u2","tag":"url","want":"fix","input":"the docs are at https://docs.example.com/setup, theres a typo in step 3","accept":["the docs are at https://docs.example.com/setup, there's a typo in step 3","The docs are at https://docs.example.com/setup, there's a typo in step 3","the docs are at https://docs.example.com/setup; there's a typo in step 3"]}
+{"id":"u3","tag":"url","want":"keep","input":"www.example.com is down again","accept":[]}
+{"id":"u4","tag":"url","want":"fix","input":"email me at tim@example.com if its urgent","accept":["email me at tim@example.com if it's urgent","Email me at tim@example.com if it's urgent."]}
+{"id":"c1","tag":"code","want":"fix","input":"run `npm run build` and let me know","accept":["run `npm run build` and let me know","Run `npm run build` and let me know"]}
+{"id":"c2","tag":"code","want":"fix","input":"the `getUserById()` function returns null now, its intentional","accept":["the `getUserById()` function returns null now, it's intentional","The `getUserById()` function returns null now, it's intentional."]}
+{"id":"c3","tag":"code","want":"fix","input":"```python\ndef foo():\n    return 1\n```\nthis is the repro, it dont work","accept":["```python\ndef foo():\n    return 1\n```\nthis is the repro, it doesn't work","```python\ndef foo():\n    return 1\n```\nThis is the repro, it doesn't work."]}
+{"id":"c4","tag":"code","want":"keep","input":"fix the flaky_test.py failures first","accept":[]}
+{"id":"l1","tag":"multiline","want":"fix","input":"heads up team\nthe deploy is posponed to 3pm\nplease hold of on merges","accept":["heads up team\nthe deploy is postponed to 3pm\nplease hold off on merges","Heads up team\nThe deploy is postponed to 3pm\nPlease hold off on merges.","heads up team:\nthe deploy is postponed to 3pm\nplease hold off on merges"]}
+{"id":"l2","tag":"multiline","want":"fix","input":"quick update:\n- we fixed the login bug\n- the cache issue is stil under investigation","accept":["quick update:\n- we fixed the login bug\n- the cache issue is still under investigation","Quick update:\n- we fixed the login bug\n- the cache issue is still under investigation"]}
+{"id":"l3","tag":"multiline","want":"fix","input":"morning!\nstandup in 10\nbring you're updates","accept":["morning!\nstandup in 10\nbring your updates","Morning!\nstandup in 10\nbring your updates"]}
+{"id":"n1","tag":"names","want":"keep","input":"Priya said the Kubernetes rollout is on track","accept":[]}
+{"id":"n2","tag":"names","want":"keep","input":"the Postgres migration finished over the weekend","accept":[]}
+{"id":"n3","tag":"names","want":"keep","input":"Q3 numbers look strong","accept":[]}
+{"id":"n4","tag":"names","want":"keep","input":"Zoom link for the sync is in the calendar invite","accept":[]}

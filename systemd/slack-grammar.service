@@ -1,0 +1,22 @@
+# slack-grammar daemon — systemd user unit.
+# Install (Phase 5 install.sh will automate; manual for now):
+#   mkdir -p ~/.config/systemd/user && cp systemd/slack-grammar.service ~/.config/systemd/user/
+#   # adjust the repo path below if different, then:
+#   systemctl --user daemon-reload && systemctl --user enable --now slack-grammar
+#
+# NOTE: paths are examples for the primary dev machine; install.sh templates them.
+
+[Unit]
+Description=slack-grammar — local LLM grammar checker for Slack
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.bun/bin/bun run %h/projects/slack_grammar/daemon/src/main.ts
+Restart=on-failure
+RestartSec=5
+# Hardening: loopback networking only is enforced by the app itself; keep the
+# unit minimal until packaging (Phase 5) revisits sandboxing.
+
+[Install]
+WantedBy=default.target

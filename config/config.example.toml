@@ -1,0 +1,26 @@
+# slack-grammar configuration (copy to ~/.config/slack-grammar/config.toml)
+# All keys optional — defaults shown. Loopback-only: do not change hosts.
+
+[llm]
+# llama.cpp build dir (scripts/install-llama.sh creates vendor/llama-b11559)
+# llama_bin_dir = "vendor/llama-b11559"
+# model_path = "models/Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
+host = "127.0.0.1"
+port = 8080
+ngl = 99            # GPU layers to offload (99 = all)
+ctx = 4096          # KV context
+flash_attn = true
+# vk_device = 0     # set to select a specific Vulkan device (null = default)
+
+[gateway]
+host = "127.0.0.1"
+port = 8765
+timeout_ms = 3000         # LLM call timeout; on timeout the original text is returned
+cache_ttl_ms = 600000     # correction cache lifetime
+cache_max = 200           # cache entries
+
+[check]
+min_words = 3             # shorter texts are not checked
+max_chars = 4000
+max_diff_ratio = 0.4      # guardrail: reject corrections changing more than this fraction of words…
+max_diff_tokens = 8       # …unless they change at most this many words in absolute terms
