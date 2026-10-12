@@ -41,6 +41,10 @@ export class LlmClient {
 				temperature: 0,
 				max_tokens: maxTokens,
 				cache_prompt: true, // llama-server: reuse KV for shared few-shot prefix
+				// Qwen3+/Qwen3.5 think by default; without this their output lands in
+				// reasoning_content and content comes back empty. Templates without
+				// this variable simply ignore it.
+				chat_template_kwargs: { enable_thinking: false },
 			}),
 			signal: signal ?? AbortSignal.timeout(this.timeoutMs),
 		});

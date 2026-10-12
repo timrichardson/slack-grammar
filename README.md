@@ -28,7 +28,7 @@ When you pause typing, slack-grammar checks your draft and shows a small diff ca
 │  • protects @mentions, URLs, code, emoji from the model                  │
 └───────────────┬──────────────────────────────────────────────────────────┘
                 │ 127.0.0.1 only
-        llama-server (llama.cpp, Vulkan backend) — Qwen3-4B, ~70ms/check
+        llama-server (llama.cpp, Vulkan backend) — Qwen3.5-4B, ~0.1–0.3s/check
 ```
 
 Slack has no plugin API, so the daemon launches Slack with

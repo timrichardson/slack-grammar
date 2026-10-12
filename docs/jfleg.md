@@ -36,6 +36,10 @@ bun run eval:jfleg -- --all     # full 1,501 sentences
 
 ## Results (2026-10-12, Qwen3-4B Q4_K_M, RX 9070 XT, pipeline v0.1.0)
 
+> Note: these full-set numbers predate the default-model change to
+> Qwen3.5-4B (see CHANGELOG). On the seeded 400-sentence sample the newer
+> default scores improved 49.0% / harmed 13.3% vs 46.0% / 15.0% here.
+
 Full set, 1,501 sentences + 100 reference probes:
 
 | metric | dev | test |

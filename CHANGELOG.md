@@ -4,6 +4,32 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/);
 versioning follows [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+### Changed
+- **Default model: Qwen3.5-4B Q4_K_M** (~3 GiB VRAM), replacing
+  Qwen3-4B-Instruct-2507. Selected by benchmarking four models on a seeded
+  400-sentence JFLEG sample plus the 60-case suite: improved-toward-reference
+  49.0% (vs 46.0%), harmed 13.3% (vs 15.0%), keep-precision 100%. Measured
+  footprints: 3.0 GiB (4B), 4.7 GiB (9B IQ4_XS) — both within a 6 GiB budget;
+  `scripts/pull-model.sh` gained `qwen3.5-9b` (max-quality option) and keeps
+  `qwen3-4b` (fastest). Gemma-4-E4B was evaluated and rejected: it rewrites
+  correct text (keep-precision 71%).
+- `LlmClient` now sends `chat_template_kwargs: {enable_thinking: false}` —
+  Qwen3.5-class models emit `<think>` blocks by default, which previously
+  drained the token budget and returned empty corrections.
+
+### Added
+- **JFLEG benchmark harness** (`eval/jfleg.ts`, `docs/jfleg.md`): full-pipeline
+  evaluation on the public JFLEG GEC corpus (1,501 sentences, 4 references
+  each; CC BY-NC-SA — downloaded at eval time, never committed). Results on
+  the shipped default: improved 45.1%, GLEU (detokenized) 0.524 dev / 0.583
+  test vs source-baseline 38.2/40.5 and human-reference 55.3/62.4.
+- Model-agnostic eval metrics (fix-recall, keep-precision) alongside the
+  strict accept-lists, for fair cross-model comparison.
+- `scripts/bench-models.sh`: per-model VRAM footprint (sysfs), both suites,
+  with a fail-loud guard against port collisions.
+
 ## [0.1.0] — 2026-10-12
 
 First public release. Local-only grammar & spelling checking for the Linux

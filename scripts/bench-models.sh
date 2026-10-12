@@ -18,6 +18,11 @@ for model in "$@"; do
 		-m "$model" -ngl 99 -fa 1 -c 2048 --host 127.0.0.1 --port $PORT >/dev/null 2>&1 &
 	srv=$!
 	for i in $(seq 1 120); do curl -sf "http://127.0.0.1:$PORT/health" >/dev/null 2>&1 && break; sleep 1; done
+	if ! kill -0 $srv 2>/dev/null; then
+		echo "FATAL: server process died (port $PORT already in use?)" >&2
+		exit 1
+	fi
+	curl -sf "http://127.0.0.1:$PORT/health" >/dev/null 2>&1 || { echo "FATAL: server did not become healthy"; exit 1; }
 	after=$(vram_gib)
 	echo "VRAM: before=${before}GiB after=${after}GiB"
 

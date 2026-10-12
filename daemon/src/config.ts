@@ -42,7 +42,7 @@ export function defaultConfig(): Config {
 	return {
 		llm: {
 			llamaBinDir: join(repoRoot, "vendor", "llama-b11559"),
-			modelPath: join(repoRoot, "models", "Qwen3-4B-Instruct-2507-Q4_K_M.gguf"),
+			modelPath: join(repoRoot, "models", "Qwen3.5-4B-Q4_K_M.gguf"),
 			host: "127.0.0.1",
 			port: 8080,
 			ngl: 99,

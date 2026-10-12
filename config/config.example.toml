@@ -4,11 +4,13 @@
 [llm]
 # llama.cpp build dir (scripts/install-llama.sh creates vendor/llama-b11559)
 # llama_bin_dir = "vendor/llama-b11559"
-# model_path = "models/Qwen3-4B-Instruct-2507-Q4_K_M.gguf"
+# model_path = "models/Qwen3.5-4B-Q4_K_M.gguf"     # default, ~3 GiB VRAM
+# model_path = "models/Qwen3.5-9B-IQ4_XS.gguf"     # max quality, ~4.7 GiB VRAM
+# model_path = "models/Qwen3-4B-Instruct-2507-Q4_K_M.gguf"  # fastest
 host = "127.0.0.1"
 port = 8080
 ngl = 99            # GPU layers to offload (99 = all)
-ctx = 4096          # KV context
+ctx = 4096          # KV context (2048 is enough for our prompt+message budget)
 flash_attn = true
 # vk_device = 0     # set to select a specific Vulkan device (null = default)
 
