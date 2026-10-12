@@ -10,8 +10,8 @@ desktop app. A daemon launches Slack with `--remote-debugging-port` and injects 
 JS bundle via the Chrome DevTools Protocol; the bundle watches the message
 composer, sends paused-typing text to a local `llama-server` (llama.cpp, Vulkan
 backend), and shows a one-click diff fix. Runs on AMD (RADV) and Intel Xe3 (ANV)
-GPUs. **Status: Phases 0–1 complete (spikes + LLM service); the CDP injector and
-in-Slack UI are next.** `PLAN.md` is the source of truth for architecture,
+GPUs. **Status: Phases 0–2 complete (spikes, LLM service, CDP injector — live in
+Slack); the in-Slack UI is next.** `PLAN.md` is the source of truth for architecture,
 phases, and decisions — read it before making design choices.
 
 ## Hard rules (non-negotiable)

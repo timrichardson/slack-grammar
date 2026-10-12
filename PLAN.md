@@ -165,17 +165,22 @@ slack_grammar/
   capitalized/lowercased) — prompt rules now prioritize real fixes over style;
   `,;` artifact around URLs was a protect-layer bug (URL regex ate commas).
 
-### Phase 2 — Injector daemon  ~1–2 days
+### Phase 2 — Injector daemon  ~1–2 days — **DONE 2026-10-12** (e2e verified in live Slack)
 
-- Launcher: copies Slack's `.desktop` entry to `~/.local/share/applications` with
-  `Exec=slack-grammar` so normal launching works; picks an ephemeral debug port,
-  binds 127.0.0.1 only.
-- CDP client: `Target.setAutoAttach` for all windows/workspaces; inject bundle on
-  every new document; re-inject after Slack self-update relaunch; reconnect on crash.
-- Binding protocol: versioned JSON messages (check request/response, config,
-  enable/disable, status).
-- CLI: `slack-grammar start|stop|status|logs|doctor` (doctor verifies GPU, Vulkan,
-  llama-server, Slack version, injection health).
+- ✅ Launcher: `slack-grammar launch` (daemon auto-start + Slack launch through it),
+  `start|stop|status|doctor|install-desktop-entry` CLI; ephemeral CDP port bound to
+  127.0.0.1; state files under `~/.local/state/slack-grammar/`.
+- ✅ CDP client: browser-level `Target.setAutoAttach` (flatten, page filter) — every
+  workspace window gets the bundle on every new document + `Runtime.addBinding`
+  bridge; reconnect with backoff; **adoption** of an already-running Slack that
+  still has our CDP port (daemon restart resilience).
+- ✅ Protocol v1 (`hello|ping|check`) verified end-to-end inside the live renderer:
+  `window.__sg.call("check", …)` → binding → gateway → llama-server → back, 95–99 ms.
+- ✅ Relaunch policy: crashed Slack re-launched up to 3×, then parks (no respawn
+  loops); user-quit Slack is left alone.
+- Found along the way: Electron's self re-exec can leave `/proc/*/cmdline` with
+  spaces instead of NUL separators — process detection splits on both; pid-file
+  removal is pid-conditional to survive daemon restart races.
 
 ### Phase 3 — In-Slack UX (the bundle)  ~2–3 days
 
