@@ -1,0 +1,23 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
+      - run: bun run typecheck
+      - run: bun test
+      - run: bun run build:bundle
+      # The eval suite (eval/corpus.jsonl) needs a running llama-server with the
+      # model on a GPU — run it locally per docs/e2e-checklist.md before
+      # touching prompts, guardrails, or protection layers.

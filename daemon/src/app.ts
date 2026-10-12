@@ -90,6 +90,10 @@ export async function runApp(
 				await respondVia(
 					makeResponse(req, "hello-ok", {
 						targets: injector?.targetCount ?? 0,
+						config: {
+							debounceMs: cfg.check.debounceMs,
+							minWords: cfg.check.minWords,
+						},
 					}),
 				);
 			} else if (req.type === "ping") {

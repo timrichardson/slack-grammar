@@ -31,6 +31,7 @@ export interface Config {
 	};
 	check: {
 		minWords: number;
+		debounceMs: number;
 		maxChars: number;
 		maxDiffRatio: number;
 		maxDiffTokens: number;
@@ -60,6 +61,7 @@ export function defaultConfig(): Config {
 		},
 		check: {
 			minWords: 3,
+			debounceMs: 1000,
 			maxChars: 4000,
 			maxDiffRatio: 0.4,
 			maxDiffTokens: 8,

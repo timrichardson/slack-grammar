@@ -3,6 +3,7 @@
 // UX: composer watcher + floating diff widget.
 
 import { startWatcher } from "./composer.ts";
+import { type CheckSettings, applyConfig } from "./rules.ts";
 
 declare global {
 	interface Window {
@@ -77,8 +78,16 @@ const BUNDLE_VERSION = "3.0.0";
 	window.__sg = bridge;
 
 	call("hello")
-		.then(() => {
+		.then((data) => {
 			bridge.connected = true;
+			// daemon-provided config overrides bundle defaults
+			try {
+				applyConfig(
+					(data as { config?: Partial<CheckSettings> } | undefined)?.config,
+				);
+			} catch {
+				/* keep defaults */
+			}
 			// UX layer starts only once the daemon answered — fail soft, never break Slack
 			try {
 				bridge.watcher = startWatcher(bridge);

@@ -10,9 +10,9 @@ desktop app. A daemon launches Slack with `--remote-debugging-port` and injects 
 JS bundle via the Chrome DevTools Protocol; the bundle watches the message
 composer, sends paused-typing text to a local `llama-server` (llama.cpp, Vulkan
 backend), and shows a one-click diff fix. Runs on AMD (RADV) and Intel Xe3 (ANV)
-GPUs. **Status: Phases 0–3 complete — usable end-to-end (widget + one-click fix
-live in Slack); hardening/packaging/laptop remain.** `PLAN.md` is the source of
-truth for architecture, phases, and decisions — read it before making design choices.
+GPUs. **Status: v0.1.0 released — Phases 0–3 + 5 complete; Phase 4 (Panther Lake
+bring-up) pending hardware.** `PLAN.md` is the source of truth for architecture,
+phases, and decisions — read it before making design choices.
 
 ## Hard rules (non-negotiable)
 
@@ -26,7 +26,7 @@ truth for architecture, phases, and decisions — read it before making design c
   silent disable + surface in `doctor`), never crash or blank the Slack renderer.
 - **No secrets, models, or binaries in git**: GGUFs and llama.cpp builds are
   fetched by `scripts/` with pinned versions + checksums.
-- License is PSF-2.0. New third-party dependencies must be permissive
+- License is Apache-2.0. New third-party dependencies must be permissive
   (MIT/BSD/Apache-2.0/PSF) — no GPL or copilot-style ambiguity.
 
 ## Commands
@@ -34,8 +34,8 @@ truth for architecture, phases, and decisions — read it before making design c
 - Install deps: `bun install` (workspace root)
 - Dev daemon: `bun run dev` — Lint: `bun run lint` — Typecheck: `bun run typecheck`
 - Tests: `bun test` — Eval suite (needs llama-server on :8080): `bun run eval`
-- Doctor: `bun run doctor`
-- Install llama.cpp / model: `scripts/install-llama.sh`, `scripts/pull-model.sh`
+- Doctor: `bun run doctor` — Full install: `scripts/install.sh` (wrapper: `slack-grammar`)
+- Build injected bundle: `bun run build:bundle`
 
 ## Layout
 

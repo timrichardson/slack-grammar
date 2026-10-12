@@ -1,6 +1,7 @@
 import { expect, test } from "bun:test";
 import {
 	CHECK_RULES,
+	applyConfig,
 	type CheckState,
 	normalizeForCompare,
 	skipReason,
@@ -39,4 +40,17 @@ test("normal messages pass with min words", () => {
 	const s = state();
 	expect(skipReason("we was thinking about the launch", s)).toBeNull();
 	expect(CHECK_RULES.minWords).toBeGreaterThanOrEqual(3);
+});
+
+test("applyConfig overrides settings within bounds and ignores junk", () => {
+	const orig = { ...CHECK_RULES };
+	applyConfig({ debounceMs: 250, minWords: 5 });
+	expect(CHECK_RULES.debounceMs).toBe(250);
+	expect(CHECK_RULES.minWords).toBe(5);
+	applyConfig(undefined);
+	applyConfig({ debounceMs: -5, minWords: 0 });
+	expect(CHECK_RULES.debounceMs).toBe(250);
+	expect(CHECK_RULES.minWords).toBe(5);
+	CHECK_RULES.minWords = orig.minWords;
+	CHECK_RULES.debounceMs = orig.debounceMs;
 });

@@ -1,16 +1,30 @@
 /** Skip-rules for whether a draft should be sent for checking. Pure, no DOM. */
 
+export interface CheckSettings {
+	minWords: number;
+	debounceMs: number;
+}
+
+/** Mutable at runtime: the daemon overrides these from user config via hello-ok. */
+export const CHECK_RULES: CheckSettings = {
+	minWords: 3,
+	debounceMs: 1000,
+};
+
+export function applyConfig(cfg: Partial<CheckSettings> | undefined): void {
+	if (!cfg) return;
+	if (typeof cfg.debounceMs === "number" && cfg.debounceMs >= 0)
+		CHECK_RULES.debounceMs = cfg.debounceMs;
+	if (typeof cfg.minWords === "number" && cfg.minWords >= 1)
+		CHECK_RULES.minWords = cfg.minWords;
+}
+
 export interface CheckState {
 	/** texts the user dismissed with "Ignore" or already applied this session */
 	ignored: Set<string>;
 	/** text currently in flight (handled by caller) */
 	lastChecked?: string;
 }
-
-export const CHECK_RULES = {
-	minWords: 3,
-	debounceMs: 1000,
-} as const;
 
 export function normalizeForCompare(s: string): string {
 	return s.replace(/\s+/g, " ").trim();

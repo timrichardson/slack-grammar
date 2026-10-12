@@ -20,7 +20,7 @@ to disk, and it must survive Slack auto-updates without manual repair.
    silent disable + a `doctor` warning, never a broken renderer.
 3. *Local-only* — the only network connections are loopback (llama-server, CDP).
 
-**License**: PSF-2.0 (per maintainer choice). Third-party deps must stay
+**License**: Apache-2.0. Third-party deps must stay
 permissive (MIT/BSD/Apache-2.0/PSF) so the project stays single-license.
 
 ## Decisions (locked in)
@@ -73,7 +73,7 @@ Key design points:
 slack_grammar/
 ├── PLAN.md
 ├── AGENTS.md             # agent/contributor working rules (CLAUDE.md symlinks here)
-├── LICENSE               # PSF-2.0
+├── LICENSE               # Apache-2.0
 ├── README.md
 ├── daemon/               # Bun/TypeScript: launcher + CDP injector + gateway
 ├── bundle/               # TypeScript → single IIFE via esbuild (no framework)
@@ -211,25 +211,24 @@ slack_grammar/
 - Battery: document power-profile interaction; keep llama-server slot warm but idle
   (`--idle`), option to stop service on battery.
 
-### Phase 5 — Hardening, packaging & open-source hygiene  ~1 day
+### Phase 5 — Hardening, packaging & open-source hygiene  ~1 day — **DONE 2026-10-12**
 
-- Security pass: ephemeral 127.0.0.1 debug port, no external binds, no message text
-  in logs or on disk, kill daemon → port closes.
-- Tests: unit (diff, sentinel protect/restore, prompt builder), integration
-  (gateway with a mock llama-server), manual e2e checklist (threads, DMs, huddles,
-  emoji picker, mentions, paste, multi-window, two workspaces).
-- `install.sh` end-to-end on a clean user; README with architecture + troubleshooting.
-- **Open-source hygiene** (per OpenSSF OSPS baseline & GitHub repo best practices):
-  - Community files before publicizing: `README.md` (quickstart + demo GIF +
-    "why this exists"), `CONTRIBUTING.md`, `SECURITY.md` (privacy promise +
-    CDP-port disclosure + private vulnerability reporting), `CODE_OF_CONDUCT.md`,
-    `SUPPORT`/support statement in README, issue/PR templates.
-  - CI from day one (GitHub Actions): lint, typecheck, unit tests, esbuild bundle
-    check on PR; Dependabot + secret scanning + push protection enabled.
-  - Reproducibility: pinned llama.cpp release + model GGUF SHA256 checksums in
-    `scripts/`; `CHANGELOG.md` + semver tags from first release.
-  - Threat-model doc (OSPS-SA-01): what the CDP port exposes, what's local-only,
-    what the model can/can't do (model output treated as untrusted input).
+- ✅ Security pass: ephemeral loopback CDP port, loopback-only llama-server and
+  gateway, no message text in logs/at rest, pid-conditional cleanup.
+- ✅ Tests: 34 unit (protect/guardrail/prompt/protocol/rules/diff/launcher/
+  config), integration paths via injected-fake gateway tests, `eval/` 60/60.
+- ✅ `install.sh` end-to-end: engine + model (SHA-256 verified), bundle build,
+  `~/.local/bin/slack-grammar` wrapper, systemd user unit generation, desktop
+  entry, doctor.
+- ✅ Config plumbing: daemon sends `check` config to the bundle in `hello-ok`
+  (debounce/minWords override bundle defaults).
+- ✅ OSS hygiene: README (quickstart/architecture/privacy/support), CONTRIBUTING,
+  SECURITY (+private reporting), CODE_OF_CONDUCT, CHANGELOG, NOTICE, issue/PR
+  templates, CI (lint/typecheck/test/build), Dependabot, threat model
+  (`docs/threat-model.md`), e2e checklist (`docs/e2e-checklist.md`).
+- ✅ License finalized as **Apache-2.0** (patent grant; aligns with llama.cpp/Qwen
+  ecosystem; PSF-2.0's grantor language was wrong for third-party use).
+- Published at github.com/timrichardson/slack-grammar, tagged v0.1.0.
 
 ## Risks & mitigations
 

@@ -21,6 +21,7 @@ cache_max = 200           # cache entries
 
 [check]
 min_words = 3             # shorter texts are not checked
+debounce_ms = 1000        # typing-pause before a check runs (sent to the bundle)
 max_chars = 4000
 max_diff_ratio = 0.4      # guardrail: reject corrections changing more than this fraction of words…
 max_diff_tokens = 8       # …unless they change at most this many words in absolute terms

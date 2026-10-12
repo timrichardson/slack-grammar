@@ -1,0 +1,4 @@
+- [ ] `bun run lint && bun run typecheck && bun test` all green
+- [ ] `bun run eval` run (and passes) — required for prompt/guardrail/protection changes
+- [ ] No message text, telemetry, or network egress added (see AGENTS.md hard rules)
+- [ ] New pure logic has unit tests; Slack-DOM changes confined to `bundle/src/selectors.ts`

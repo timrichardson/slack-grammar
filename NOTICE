@@ -1,0 +1,15 @@
+slack-grammar
+Copyright 2026 Tim Richardson
+
+This product includes software developed by third parties:
+
+- llama.cpp (https://github.com/ggml-org/llama.cpp) — MIT License
+  Prebuilt binaries are downloaded at install time by scripts/install-llama.sh.
+- Bun (https://bun.sh) — MIT License (runtime for the daemon)
+- esbuild (https://esbuild.github.io) — MIT License
+- Biome (https://biomejs.dev) — MIT OR Apache-2.0
+- smol-toml (https://github.com/smol-rs/smol-toml) — MIT OR Apache-2.0
+
+Model weights are downloaded at install time by scripts/pull-model.sh:
+- Qwen3-4B-Instruct-2507 GGUF quantizations by bartowski, from
+  Qwen3-4B-Instruct-2507 (Alibaba / Qwen team) — Apache-2.0
