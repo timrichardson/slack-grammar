@@ -102,8 +102,10 @@ export async function runCheck(
 	}
 
 	const corrected = restore(content, spans);
-
-	return done(corrected, corrected !== text, false);
+	// whitespace-only differences (e.g. trailing newline) are not changes
+	const normEq = (a: string, b: string) =>
+		a.replace(/\s+/g, " ").trim() === b.replace(/\s+/g, " ").trim();
+	return done(corrected, !normEq(corrected, text), false);
 }
 
 /**

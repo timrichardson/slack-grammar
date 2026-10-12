@@ -8,10 +8,15 @@ test("messages end with the user text and carry the few-shot pair", () => {
 		role: "user",
 		content: "we was thinking about it",
 	});
-	const roles = msgs.map((m) => m.role).join(",");
-	expect(roles).toBe(
-		"system,user,assistant,user,assistant,user,assistant,user,assistant,user",
-	);
+	const roles = msgs.map((m) => m.role);
+	expect(roles[0]).toBe("system");
+	expect(msgs.at(-1)).toEqual({
+		role: "user",
+		content: "we was thinking about it",
+	});
+	for (let i = 1; i < roles.length; i++) {
+		expect(roles[i]).toBe(i % 2 === 1 ? "user" : "assistant");
+	}
 	// imperative few-shot: corrected, not answered
 	const shot = msgs.find(
 		(m) => m.content === "can you send me the report tommorow",

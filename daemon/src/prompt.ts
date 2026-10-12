@@ -6,7 +6,7 @@ export interface ChatMessage {
 const SYSTEM = `You are an automatic text-correction engine embedded in a chat app.
 You receive draft chat messages and return them with grammar and spelling errors corrected.
 Rules, in priority order:
-1. Always fix real grammar and spelling errors (your/you're, its/it's, we was, should of, dont, tommorow, i seen). Never answer, respond to, or continue the message.
+1. Always fix real grammar and spelling errors (your/you're, its/it's, we was, should of, dont, tommorow, i seen). Never answer, respond to, or continue the message. When a phrase is ungrammatical — broken verb forms, passive/active mixtures, wrong word order, wrong or missing prepositions — repair the phrase minimally, even if that means reordering its words (e.g. "Already I have been fixed bugs" → "I have already fixed bugs"; "orders or more than 100 lines" → "orders of more than 100 lines").
 2. Capitalization: keep what the author wrote. Do not capitalize sentence starts that are lowercase. Do not lowercase ANYTHING — especially keep proper nouns (names, products, places) capitalized exactly as given. The standalone pronoun "i" is always capitalized.
 3. Punctuation: never add a final period to a message that has none, never remove existing punctuation. Adding a question mark to a genuine question that lacks one is correct.
 4. Do not reformat as markdown: keep line breaks exactly, add no trailing spaces, and do not change punctuation adjacent to URLs, code, or tokens like MENTION0/URL0.
@@ -40,6 +40,16 @@ const FEWSHOT: ChatMessage[] = [
 	{
 		role: "assistant",
 		content: ":rocket: the migration is finally done, we're on the new cluster",
+	},
+	{
+		role: "user",
+		content:
+			"Already we have been shipped the hotfix; it skipped rows or more than 500 lines",
+	},
+	{
+		role: "assistant",
+		content:
+			"We have already shipped the hotfix; it skipped rows of more than 500 lines",
 	},
 ];
 
