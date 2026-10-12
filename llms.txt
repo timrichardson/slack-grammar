@@ -1,0 +1,78 @@
+# slack-grammar
+
+> Local-only grammar and spelling checking for the Linux Slack desktop app. A daemon launches Slack with an ephemeral loopback CDP debug port, injects a bundle that watches the message composer, and checks paused-typing drafts against a local llama.cpp (Vulkan) server on AMD/Intel GPUs. No cloud, no telemetry, message text never leaves localhost and is never written to disk.
+
+- Repo: https://github.com/timrichardson/slack-grammar
+- Language/runtime: TypeScript (strict) on Bun; injected bundle is vanilla ES built by esbuild to a single IIFE
+- License: Apache-2.0 (permissive deps only — MIT/BSD/Apache-2.0/PSF)
+- Status: v0.1.x, daily-driver quality on the author's machine; PRs disabled at repo level, issue reports welcome
+- Default model: Qwen3.5-4B Q4_K_M (~3 GiB VRAM); `Qwen3.5-9B-IQ4_XS` (~4.7 GiB) as max-quality option
+
+## Hard rules (apply to any change)
+
+1. Never eat the user's text — every error path returns/applies the original.
+2. Never break Slack — injected code fails soft; selector breakage means silent disable, surfaced via `slack-grammar doctor`.
+3. Local-only — loopback connections only; no telemetry; logs carry hashes/lengths, never message text; test fixtures use synthetic text.
+
+## Commands
+
+- `bun install` — deps; `bun run lint` / `bun run typecheck` / `bun test` — quality gates
+- `bun run build:bundle` — build the injected IIFE
+- `bun run eval` — 60-case correction suite (needs llama-server on :8080)
+- `bun run eval:jfleg` — public JFLEG benchmark, downloaded at runtime (CC BY-NC-SA)
+- `scripts/install.sh` — end-to-end install (engine + model + bundle + wrapper + systemd + desktop entry)
+- CLI: `slack-grammar launch|start|stop|status|doctor|install-desktop-entry`
+
+## Architecture
+
+```
+Slack renderer
+  └─ bundle/ (injected via CDP, re-registered every page load)
+       composer watcher -> 1s pause -> diff card UI (Shadow DOM)
+            │ CDP Runtime.addBinding (no network from the page)
+daemon/ (Bun)
+  ├─ injector: Target.setAutoAttach, reconnect+adopt, protocol v1
+  ├─ gateway 127.0.0.1:8765: /check — LRU cache, in-flight dedup
+  └─ check pipeline: sentinel protect (mentions/URLs/code) ->
+     chat-style-preserving prompt (4 few-shots) -> guardrails
+     (absolute+ratio thresholds, line-salvage, sentinel integrity)
+            │ 127.0.0.1:8080
+llama-server (llama.cpp, Vulkan backend)
+```
+
+## Codebase map
+
+- `daemon/src/config.ts` — TOML config + defaults (ports, thresholds, model path)
+- `daemon/src/llm.ts` — llama-server client (`enable_thinking:false` for Qwen3.5-class models) + process supervision
+- `daemon/src/protect.ts` — sentinel masking/restoration for mentions, URLs, code, emoji
+- `daemon/src/prompt.ts` — system prompt + few-shots (chat-style preservation rules)
+- `daemon/src/guardrail.ts` — diff-ratio/absolute-token validation of corrections
+- `daemon/src/gateway.ts` — `/check` pipeline, cache, single-slot serialization
+- `daemon/src/cdp.ts` — CDP connection, auto-attach injector, binding bridge
+- `daemon/src/launcher.ts` — Slack discovery (/proc, handles Electron cmdline quirks) + ephemeral port launch
+- `daemon/src/app.ts` — supervision loop: adopt-or-launch, bounded relaunch
+- `bundle/src/selectors.ts` — ALL Slack DOM knowledge lives here (single breakage point)
+- `bundle/src/composer.ts` — input watcher, debounce, stale-discard, apply-fix
+- `bundle/src/diff.ts` — word-level LCS diff for the suggestion card
+- `bundle/src/rules.ts` — skip rules + runtime config from the daemon
+- `eval/run.ts` + `eval/corpus.jsonl` — 60-case suite, strict + model-agnostic metrics
+- `eval/jfleg.ts` — JFLEG benchmark harness (detokenization, GLEU via scipy venv)
+
+## Docs
+
+- [README](https://github.com/timrichardson/slack-grammar/blob/main/README.md): quickstart, usage, configuration, privacy
+- [AGENTS.md](https://github.com/timrichardson/slack-grammar/blob/main/AGENTS.md): working rules and conventions for coding agents and humans
+- [PLAN.md](https://github.com/timrichardson/slack-grammar/blob/main/PLAN.md): architecture decisions, phase log, risks
+- [docs/threat-model.md](https://github.com/timrichardson/slack-grammar/blob/main/docs/threat-model.md): assets, trust boundaries (CDP port exposure), mitigations
+- [docs/selectors.md](https://github.com/timrichardson/slack-grammar/blob/main/docs/selectors.md): Slack DOM/CDP findings (Quill composer, send-button oracle)
+- [docs/jfleg.md](https://github.com/timrichardson/slack-grammar/blob/main/docs/jfleg.md): benchmark methodology and results
+- [docs/e2e-checklist.md](https://github.com/timrichardson/slack-grammar/blob/main/docs/e2e-checklist.md): manual QA list
+- [docs/spike-notes.md](https://github.com/timrichardson/slack-grammar/blob/main/docs/spike-notes.md): Phase 0 spike results (env pins)
+- [SECURITY.md](https://github.com/timrichardson/slack-grammar/blob/main/SECURITY.md): reporting and the security/privacy model
+- [CONTRIBUTING.md](https://github.com/timrichardson/slack-grammar/blob/main/CONTRIBUTING.md): contribution status (PRs disabled; issues welcome)
+
+## Optional
+
+- [CHANGELOG.md](https://github.com/timrichardson/slack-grammar/blob/main/CHANGELOG.md): release history
+- [config/config.example.toml](https://github.com/timrichardson/slack-grammar/blob/main/config/config.example.toml): all tunables
+- Eval gates: prompt/guardrail/protection changes must run `bun run eval` (≥85%, ≤1 false positive) — see AGENTS.md

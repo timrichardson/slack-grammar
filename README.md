@@ -97,6 +97,9 @@ bun run eval                 # 60-case correction suite (needs llama-server up)
 bun run eval:jfleg           # public JFLEG benchmark (see docs/jfleg.md)
 ```
 
+`llms.txt` provides a curated project map for AI tools; this repo is also served
+as an MCP server at `https://gitmcp.io/timrichardson/slack-grammar`.
+
 Architecture and decisions: [PLAN.md](PLAN.md) · agent/contributor guide: [AGENTS.md](AGENTS.md)
 
 ## Support
