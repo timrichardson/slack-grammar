@@ -39,6 +39,8 @@ const CSS = `
 .sgw-apply:hover { background: #148567; }
 .sgw-ignore { background: transparent; color: #d1d2d3; }
 .sgw-ignore:hover { border-color: #9aa0a6; }
+.sgw-copy { background: transparent; color: #9aa0a6; margin-left: auto; }
+.sgw-copy:hover { border-color: #9aa0a6; color: #d1d2d3; }
 .sgw .del { color: #ff7d92; text-decoration: line-through; }
 .sgw .ins { color: #7ddba3; font-weight: 600; }
 .sgw-flash { padding: 10px; color: #7ddba3; }
@@ -107,6 +109,40 @@ function renderDiff(container: HTMLElement, segs: DiffSeg[]): void {
 	}
 }
 
+/** Copy the corrected text; never throws — button label reflects the outcome. */
+async function copyToClipboard(text: string, btn: HTMLButtonElement): Promise<void> {
+	let ok = false;
+	try {
+		if (navigator.clipboard?.writeText) {
+			await navigator.clipboard.writeText(text);
+			ok = true;
+		}
+	} catch {
+		/* fall through to the legacy path */
+	}
+	if (!ok) {
+		try {
+			const ta = document.createElement("textarea");
+			ta.value = text;
+			ta.setAttribute("readonly", "");
+			ta.style.position = "fixed";
+			ta.style.opacity = "0";
+			document.body.append(ta);
+			ta.select();
+			ok = document.execCommand("copy");
+			ta.remove();
+		} catch {
+			ok = false;
+		}
+	}
+	btn.textContent = ok ? "Copied" : "Copy failed";
+	btn.disabled = true;
+	setTimeout(() => {
+		btn.textContent = "Copy";
+		btn.disabled = false;
+	}, 1400);
+}
+
 export function showSuggestion(opts: {
 	composer: HTMLElement;
 	original: string;
@@ -144,7 +180,11 @@ export function showSuggestion(opts: {
 	const ignore = document.createElement("button");
 	ignore.className = "sgw-ignore";
 	ignore.textContent = "Ignore";
-	actions.append(apply, ignore);
+	const copy = document.createElement("button");
+	copy.className = "sgw-copy";
+	copy.title = "Copy corrected text";
+	copy.textContent = "Copy";
+	actions.append(apply, ignore, copy);
 
 	card.append(header, diff, actions);
 	root.append(card);
@@ -156,6 +196,7 @@ export function showSuggestion(opts: {
 	});
 	apply.addEventListener("click", opts.actions.onApply);
 	ignore.addEventListener("click", opts.actions.onIgnore);
+	copy.addEventListener("click", () => void copyToClipboard(opts.corrected, copy));
 	apply.focus({ preventScroll: true });
 }
 

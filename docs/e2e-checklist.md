@@ -20,6 +20,7 @@ apply-path. Everything except the last section can be driven headlessly via
 - [ ] **Apply fix** → composer text corrected, send button enabled, "✓ applied — Ctrl+Z to undo" flash, no re-check loop
 - [ ] Ctrl+Z after Apply → original text restored
 - [ ] **Ignore** → card hides; same text typed again does not re-check
+- [ ] **Copy** → corrected text on the clipboard (paste elsewhere to verify); button shows "Copied", card stays open, composer untouched
 - [ ] Esc → card hides
 - [ ] Clean text ("the deployment finished successfully this morning") → no card
 - [ ] `/remind …`, "heads up team:", open code fence → no check
