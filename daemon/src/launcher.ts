@@ -25,6 +25,25 @@ export function isSlackCmdline(cmdline: string): boolean {
 	return first === "/usr/bin/slack" || first === "/usr/lib/slack/slack";
 }
 
+/**
+ * Decide whether a Slack we supervised and is no longer running should be
+ * relaunched. A clean exit (exit code 0, or a polite TERM/INT signal) is a
+ * user quit — respect it and park until the next `launch` request. Only
+ * abnormal exits of a process we spawned count as crashes worth restarting.
+ * Adopted instances (not spawned by us) are never respawned on the user's
+ * behalf: we can't read their exit status, and we didn't start them.
+ */
+export function shouldRespawnSlack(
+	spawned: boolean,
+	exitCode: number | null,
+	signal: NodeJS.Signals | null,
+): boolean {
+	if (!spawned) return false;
+	if (exitCode === 0) return false;
+	if (signal === "SIGTERM" || signal === "SIGINT") return false;
+	return true;
+}
+
 /** Scan /proc for any running Slack main process (avoids pgrep/pkill self-match bugs). */
 export function isSlackRunning(): boolean {
 	try {

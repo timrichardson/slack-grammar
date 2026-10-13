@@ -8,6 +8,7 @@ import {
 	freePort,
 	isSlackRunning,
 	launchSlack,
+	shouldRespawnSlack,
 	waitUntil,
 } from "./launcher.ts";
 import { LlmClient, ensureLlamaServer } from "./llm.ts";
@@ -146,6 +147,31 @@ export async function runApp(
 				}
 			}
 			return false;
+		}
+		if (slackOwned && !isSlackRunning()) {
+			// Our Slack is gone. Distinguish a deliberate quit from a crash:
+			// only abnormal exits of a process we spawned get crash-restarts.
+			const spawned = slackProc !== null;
+			const exitCode = slackProc?.exitCode ?? null;
+			const signal = slackProc?.signalCode ?? null;
+			slackProc = null;
+			cdpPort = null;
+			removeStateFile("cdp.port"); // avoid stale-port confusion later
+			if (!shouldRespawnSlack(spawned, exitCode, signal)) {
+				slackOwned = false;
+				log({
+					event: "slack",
+					msg: spawned
+						? "slack exited cleanly (user quit) — not respawning; use `slack-grammar launch`"
+						: "adopted slack exited — not respawning; use `slack-grammar launch`",
+				});
+				return false;
+			}
+			log({
+				event: "slack",
+				msg: `slack exited abnormally (exit=${exitCode ?? "null"} signal=${signal ?? "none"}) — crash restart follows`,
+			});
+			// fall through: the restart budget below still applies
 		}
 		if (!requested && !slackOwned && restarts > 0) return false; // parked after giving up
 		if (!requested && slackOwned && restarts >= 3) return false; // crashed too often — park
