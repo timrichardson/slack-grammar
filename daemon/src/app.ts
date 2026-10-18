@@ -3,6 +3,7 @@ import { CdpConnection, Injector, loadBundleSource } from "./cdp.ts";
 /** App orchestration: llama-server + gateway + Slack launcher + CDP injector. */
 import type { Config } from "./config.ts";
 import { Checker, startGateway } from "./gateway.ts";
+import { LaunchPause } from "./launch-pause.ts";
 import {
 	findSlackBinary,
 	freePort,
@@ -69,6 +70,7 @@ export async function runApp(
 	let conn: CdpConnection | null = null;
 	let injector: Injector | null = null;
 	let disconnectedResolve: (() => void) | null = null;
+	const launchPause = new LaunchPause();
 
 	const status = (): AppStatus => ({
 		running,
@@ -180,10 +182,12 @@ export async function runApp(
 			log({ event: "slack", level: "error", msg: "slack binary not found" });
 			return false;
 		}
-		const port = await freePort();
-		const { proc } = await launchSlack(bin, port, (msg) =>
-			log({ event: "slack", msg }),
-		);
+		const launched = await launchPause.launch(async () => {
+			const port = await freePort();
+			return launchSlack(bin, port, (msg) => log({ event: "slack", msg }));
+		});
+		if (!launched) return false;
+		const { proc, port } = launched;
 		slackProc = proc;
 		slackOwned = true;
 		cdpPort = port;
@@ -247,12 +251,15 @@ export async function runApp(
 		}
 	}
 
+	// Also acknowledge while attached to a live Slack or parked between retries.
+	const pauseTimer = setInterval(() => launchPause.acknowledge(), 250);
 	const supervisePromise = supervise();
 
 	return {
 		status,
 		async stop(): Promise<void> {
 			running = false;
+			clearInterval(pauseTimer);
 			disconnectedResolve?.();
 			injector?.stop();
 			conn?.close();

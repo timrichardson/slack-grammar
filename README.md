@@ -64,6 +64,19 @@ Then type a sloppy message in any Slack composer and pause for a second.
 | `Ctrl+Shift+G` | Toggle checking on/off for the window |
 | `slack-grammar status` / `doctor` | Health of daemon, gateway, Slack injection |
 | `slack-grammar stop` | Stop the daemon (Slack keeps running, injection pauses) |
+| `bun run reinject` (from this checkout) | Confirm, gracefully restart Slack, rebuild and verify checker injection |
+
+If Slack is already running without the checker, run `bun run reinject` from this
+checkout. Save drafts and finish calls first. For unattended use, pass `--yes`:
+`bun run reinject --yes`. The script never force-kills Slack, and preserves an
+already-active systemd service; otherwise it uses the normal detached daemon.
+Services awaiting an automatic restart remain systemd-managed too. The helper
+pauses daemon launches before quitting Slack. If an older daemon cannot
+acknowledge that pause, quit Slack manually and stop the daemon/service before
+rerunning. An interrupted helper's stale `launch-pause.pid` lock under
+`~/.local/state/slack-grammar/` (or `$XDG_STATE_HOME/slack-grammar/`) can be removed
+after confirming no reinjection helper is running; dead helpers do not block
+normal Slack launches.
 
 Use the "Slack (slack-grammar)" desktop entry instead of the normal Slack icon.
 

@@ -8,8 +8,9 @@
   "scripts": {
     "dev": "bun run daemon/src/main.ts",
     "doctor": "bun run daemon/src/main.ts doctor",
-    "lint": "biome check daemon eval",
-    "format": "biome format --write daemon eval",
+    "reinject": "bun run scripts/reinject.ts",
+    "lint": "biome check daemon eval scripts",
+    "format": "biome format --write daemon eval scripts",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
     "eval": "bun run eval/run.ts",

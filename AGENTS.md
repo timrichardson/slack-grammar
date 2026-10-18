@@ -36,6 +36,13 @@ phases, and decisions — read it before making design choices.
 - Tests: `bun test` — Eval suite (needs llama-server on :8080): `bun run eval`
 - Doctor: `bun run doctor` — Full install: `scripts/install.sh` (wrapper: `slack-grammar`)
 - Build injected bundle: `bun run build:bundle`
+- Rebuild and reinject into Slack: `bun run reinject` (confirms before restarting;
+  `--yes` skips confirmation; never force-kills Slack). Script and tests live in
+  `scripts/reinject*.ts`, included in lint/typecheck/test.
+  It acquires a PID-scoped launch pause (`daemon/src/launch-pause.ts`) and waits
+  for the daemon to acknowledge quiescence before quitting Slack; keeps pending
+  systemd restarts service-managed. Older daemons without this handshake fail
+  safely before quitting Slack.
 
 ## Layout
 

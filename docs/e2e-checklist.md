@@ -43,3 +43,21 @@ apply-path. Everything except the last section can be driven headlessly via
 ## Eval gate
 
 - [ ] `bun run eval` ≥ 85% overall, 0–1 false positives on keep-cases (currently 60/60)
+
+## Reinjection helper
+
+- [ ] `bun run reinject --help` exits without touching Slack or the daemon.
+- [ ] `bun run reinject`: decline confirmation; Slack and daemon stay untouched.
+- [ ] After saving drafts and ending calls, accept confirmation: bundle rebuilds,
+  Slack quits gracefully, daemon restarts, and the checker reports enabled.
+- [ ] Repeat with an active systemd service and with a detached daemon.
+- [ ] With a daemon running alongside external, uninjected Slack, reinjection
+  pauses launch supervision: Slack does not respawn during the quit window.
+- [ ] With the service in `activating (auto-restart)`, reinjection cancels the
+  pending retry via service stop and restarts through systemd, not detached mode.
+- [ ] An older daemon without pause acknowledgement causes a safe failure before
+  Slack is asked to quit; no new daemon starts. Quit Slack manually and stop the
+  daemon/service, then rerun to upgrade it.
+- [ ] If Slack refuses to quit, helper times out without SIGKILL; quit it manually
+  and rerun. If injection fails, helper exits nonzero rather than claiming success.
+- [ ] No real draft text appears in script output; no draft is edited or sent.
