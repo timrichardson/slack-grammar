@@ -13,5 +13,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["daemon/**/*.ts", "eval/**/*.ts", "bundle/**/*.ts", "scripts/**/*.ts", "bunfig.toml"]
+  "include": ["daemon/**/*.ts", "eval/**/*.ts", "bundle/**/*.ts", "scripts/**/*.ts", "shared/**/*.ts", "bunfig.toml"]
 }

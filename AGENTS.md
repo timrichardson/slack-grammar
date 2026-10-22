@@ -54,6 +54,7 @@ phases, and decisions — read it before making design choices.
 - `eval/` — grammar corpus + model accuracy/latency runner
 - `scripts/` — pinned installs of llama.cpp + model GGUFs
 - `systemd/` — user units; `docs/` — spike notes incl. Slack selector reference
+- `shared/` — bundle version and privacy-safe apply diagnostic contract
 
 ## Conventions
 
@@ -63,6 +64,19 @@ phases, and decisions — read it before making design choices.
   of breakage when Slack updates).
 - LLM calls go through the daemon gateway (prompt templates, caching, timeouts)
   — the bundle never talks to llama-server directly.
+- Apply is an async, verified native-edit transaction (`bundle/src/texty.ts`):
+  require the original draft, select an editor-scoped Range (not document-wide
+  selectAll), verify after Slack settles, and undo a bad replacement only if no
+  intervening user input occurred. Never repair the composer with direct DOM
+  writes. Failure stays visible and offers Copy; tests: `bun test bundle/src/texty.test.ts`.
+- Apply snapshots the click-time draft in memory, verifies past initial paint,
+  and restores that snapshot natively if Undo still leaves the editor empty.
+  Never retry the correction automatically or overwrite intervening input.
+  Apply diagnostics are allowlisted metadata only (`shared/apply-diagnostic.ts`,
+  `daemon/src/apply-log.ts`); journal event `apply`, renderer ring buffer
+  `window.__sg.watcher.applyDiagnostics`. No draft text, hashes, DOM or exceptions.
+- Bump `shared/bundle-version.ts` whenever changing injected code; reinjection
+  verifies that exact version. An equal version is not re-evaluated in loaded pages.
 - Commits: Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:` …).
 - Tests accompany logic changes (diff, sentinel protect/restore, prompt
   builder, gateway queue). Pure logic gets unit tests; CDP/UI work gets manual

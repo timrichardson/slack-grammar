@@ -1,4 +1,5 @@
 import type { ChildProcess } from "node:child_process";
+import { applyLog } from "./apply-log.ts";
 import { CdpConnection, Injector, loadBundleSource } from "./cdp.ts";
 /** App orchestration: llama-server + gateway + Slack launcher + CDP injector. */
 import type { Config } from "./config.ts";
@@ -108,6 +109,14 @@ export async function runApp(
 				}
 				const result = await checker.check(req.text);
 				await respondVia(makeResponse(req, "check-ok", result));
+			} else if (req.type === "apply-diagnostic") {
+				const entry = applyLog(req.data);
+				if (!entry) {
+					await respondVia(makeError(req, "invalid apply diagnostic"));
+					return;
+				}
+				log(entry);
+				await respondVia(makeResponse(req, "diagnostic-ok"));
 			} else {
 				await respondVia(makeError(req, `unknown type: ${req.type}`));
 			}

@@ -64,8 +64,15 @@ Key design points:
   word-level diff in the bundle. Small models are unreliable at emitting structured
   diffs, but very reliable at "rewrite this text corrected".
 - **Replacement via native editing commands.** Apply fixes with
-  `document.execCommand('insertText')` / InputEvents so Slack's own editor state,
-  send-button enablement, and Ctrl+Z undo stack all stay consistent.
+  an editor-scoped Range + `document.execCommand('insertText')` so Slack's own
+  editor state, send-button enablement, and Ctrl+Z undo stack stay consistent.
+  Reject stale drafts, verify the settled text, and undo failed replacements
+  only when no intervening user input occurred; otherwise leave newer input
+  alone. Never claim success based on the command return value alone.
+  Capture the click-time draft in memory; if Undo fails and the same untouched
+  editor remains empty, restore that snapshot with a verified native insertion.
+  Never automatically retry the correction after recovery. Record only
+  allowlisted Apply metadata, and version each injected bundle change.
 
 ## Repository layout
 

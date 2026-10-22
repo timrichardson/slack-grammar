@@ -11,6 +11,7 @@ import {
 } from "../daemon/src/launch-pause.ts";
 import { isSlackCmdline } from "../daemon/src/launcher.ts";
 import { isPidAlive, readPid, readStateFile } from "../daemon/src/runtime.ts";
+import { BUNDLE_VERSION } from "../shared/bundle-version.ts";
 
 const HELP = `Restart Slack with the local grammar checker injected.
 
@@ -176,8 +177,7 @@ async function injectionReady(): Promise<boolean> {
 			const probe = async () => {
 				await conn.connect();
 				const result = (await conn.send("Runtime.evaluate", {
-					expression:
-						"Boolean(window.__sg?.connected && window.__sg?.watcher?.enabled)",
+					expression: `Boolean(window.__sg?.connected && window.__sg?.watcher?.enabled && window.__sg?.version === ${JSON.stringify(BUNDLE_VERSION)})`,
 					returnByValue: true,
 				})) as { result?: { value?: boolean } };
 				return result.result?.value === true;
@@ -333,7 +333,7 @@ export async function main(args: string[]): Promise<void> {
 		60_000,
 		"Could not verify injection. Slack was not force-killed. Check `bun run doctor` and the daemon logs.",
 	);
-	console.log("Slack grammar checker injected and enabled.");
+	console.log(`Slack grammar checker ${BUNDLE_VERSION} injected and enabled.`);
 }
 
 if (import.meta.main) {

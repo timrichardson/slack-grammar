@@ -18,7 +18,25 @@ apply-path. Everything except the last section can be driven headlessly via
 
 - [ ] Type a synthetic typo message ("we was definately going to ship it yesturday"), pause → diff card appears with red/green highlights
 - [ ] **Apply fix** → composer text corrected, send button enabled, "✓ applied — Ctrl+Z to undo" flash, no re-check loop
+- [ ] Suggestion appears without moving keyboard focus out of the composer;
+  clicking Apply keeps focus there. Tabbing to Apply and pressing Enter also works.
 - [ ] Ctrl+Z after Apply → original text restored
+- [ ] Edit the draft after a suggestion appears → old card disappears; no old
+  correction can overwrite the newer draft.
+- [ ] Switch channels/threads with a visible suggestion → stale Apply cannot
+  modify a detached composer or another draft.
+- [ ] Double-click Apply → only one replacement transaction.
+- [ ] `bun test bundle/src/texty.test.ts` passes the failed/throwing command,
+  delayed clearing, rollback, intervening input, and background-frame cases.
+- [ ] Fault-inject a native insertion that clears the synthetic draft and a failed
+  Undo: the click-time snapshot is restored and verified, with no success flash
+  and no automatic correction retry. If recovery also fails, **Copy original**
+  recovers the saved draft; nothing is written to logs except allowlisted metadata.
+- [ ] Apply reports snapshot/insert/verify/undo/restore/finish metadata as applicable
+  in `window.__sg.watcher.applyDiagnostics` and journal `event: apply` records.
+  Check `bun test daemon/src/apply-log.test.ts` for text-redaction coverage.
+- [ ] Type or Send during verification: newer input is not undone or overwritten.
+  Apply's full-draft selection is already released before the first async wait.
 - [ ] **Ignore** → card hides; same text typed again does not re-check
 - [ ] **Copy** → corrected text on the clipboard (paste elsewhere to verify); button shows "Copied", card stays open, composer untouched
 - [ ] Esc → card hides
@@ -26,7 +44,9 @@ apply-path. Everything except the last section can be driven headlessly via
 - [ ] `/remind …`, "heads up team:", open code fence → no check
 - [ ] `@mention`, URL, `inline code`, :emoji: survive byte-for-byte after Apply
 - [ ] Ctrl+Shift+G toggles checking; glyph reflects state
-- [ ] Multi-line message → line breaks preserved after Apply
+- [ ] Multi-line message → line breaks preserved after Apply, or Apply refuses
+  safely, restores the original draft, and offers Copy. No success flash for a
+  mismatched result (see `docs/selectors.md` for native paragraph expansion).
 
 ## Resilience
 
@@ -61,3 +81,5 @@ apply-path. Everything except the last section can be driven headlessly via
 - [ ] If Slack refuses to quit, helper times out without SIGKILL; quit it manually
   and rerun. If injection fails, helper exits nonzero rather than claiming success.
 - [ ] No real draft text appears in script output; no draft is edited or sent.
+- [ ] The live `window.__sg.version` matches `shared/bundle-version.ts`; a stale,
+  connected bundle must not count as successful deployment.

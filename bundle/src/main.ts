@@ -2,7 +2,8 @@
 // Transport: CDP binding only (no network from Slack's page).
 // UX: composer watcher + floating diff widget.
 
-import { startWatcher } from "./composer.ts";
+import { BUNDLE_VERSION } from "../../shared/bundle-version.ts";
+import { type WatcherState, startWatcher } from "./composer.ts";
 import { type CheckSettings, applyConfig } from "./rules.ts";
 
 declare global {
@@ -10,15 +11,10 @@ declare global {
 		__slackGrammar?: (payload: string) => void;
 		__slackGrammarReceive?: (payload: string) => void;
 		__sg?: {
-			call(type: string, text?: string): Promise<unknown>;
+			call(type: string, text?: string, data?: unknown): Promise<unknown>;
 			connected: boolean;
 			version?: string;
-			watcher?: {
-				enabled: boolean;
-				checks: number;
-				applied: number;
-				lastOutcome?: string;
-			};
+			watcher?: WatcherState;
 		};
 	}
 }
@@ -30,8 +26,6 @@ interface ProtocolMessage {
 	data?: unknown;
 	error?: string;
 }
-
-const BUNDLE_VERSION = "3.0.0";
 
 (() => {
 	const w = window as Window & { __sgBundleVersion?: string };
@@ -57,7 +51,11 @@ const BUNDLE_VERSION = "3.0.0";
 		}
 	};
 
-	const call = (type: string, text?: string): Promise<unknown> =>
+	const call = (
+		type: string,
+		text?: string,
+		data?: unknown,
+	): Promise<unknown> =>
 		new Promise((resolve, reject) => {
 			const id = `sg${++seq}`;
 			pending.set(id, { resolve, reject });
@@ -67,7 +65,7 @@ const BUNDLE_VERSION = "3.0.0";
 					reject(new Error("slack-grammar: daemon timeout"));
 				}
 			}, 5000);
-			window.__slackGrammar?.(JSON.stringify({ v: 1, id, type, text }));
+			window.__slackGrammar?.(JSON.stringify({ v: 1, id, type, text, data }));
 		});
 
 	const bridge: NonNullable<Window["__sg"]> = {

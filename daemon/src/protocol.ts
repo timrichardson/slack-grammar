@@ -4,14 +4,20 @@ export const BINDING_NAME = "__slackGrammar";
 export const RECEIVE_FN = "__slackGrammarReceive";
 export const PROTOCOL_VERSION = 1;
 
-export type RequestType = "hello" | "ping" | "check";
-export type ResponseType = "hello-ok" | "pong" | "check-ok" | "error";
+export type RequestType = "hello" | "ping" | "check" | "apply-diagnostic";
+export type ResponseType =
+	| "hello-ok"
+	| "pong"
+	| "check-ok"
+	| "diagnostic-ok"
+	| "error";
 
 export interface Request {
 	v: 1;
 	id: string;
 	type: RequestType;
 	text?: string;
+	data?: unknown;
 }
 
 export interface Response {

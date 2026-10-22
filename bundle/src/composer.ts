@@ -1,3 +1,5 @@
+import type { ApplyDiagnostic } from "../../shared/apply-diagnostic.ts";
+import { BUNDLE_VERSION } from "../../shared/bundle-version.ts";
 /** Composer watcher: debounce typing pauses, request checks, show suggestions. */
 import { diffWords, hasRealDiff } from "./diff.ts";
 import {
@@ -12,11 +14,12 @@ import {
 	hideSuggestion,
 	setStatus,
 	showAppliedFlash,
+	showApplyError,
 	showSuggestion,
 } from "./ui.ts";
 
 interface Bridge {
-	call(type: string, text?: string): Promise<unknown>;
+	call(type: string, text?: string, data?: unknown): Promise<unknown>;
 	connected: boolean;
 }
 
@@ -31,12 +34,20 @@ export interface WatcherState {
 	enabled: boolean;
 	checks: number;
 	applied: number;
+	applyAttempts: number;
+	applyDiagnostics: (ApplyDiagnostic & { attempt: number })[];
 	lastOutcome?: string;
 }
 
 export function startWatcher(bridge: Bridge): WatcherState {
 	const state: CheckState = { ignored: new Set<string>() };
-	const exposed: WatcherState = { enabled: true, checks: 0, applied: 0 };
+	const exposed: WatcherState = {
+		enabled: true,
+		checks: 0,
+		applied: 0,
+		applyAttempts: 0,
+		applyDiagnostics: [],
+	};
 
 	let activeComposer: HTMLElement | null = null;
 	let timer: ReturnType<typeof setTimeout> | null = null;
@@ -68,17 +79,53 @@ export function startWatcher(bridge: Bridge): WatcherState {
 					corrected: res.corrected,
 					segs,
 					actions: {
-						onApply: () => {
+						onApply: async () => {
+							if (applying || !exposed.enabled) return;
+							if (!composer.isConnected || composer.innerText !== text) {
+								hideSuggestion();
+								return;
+							}
 							applying = true;
-							const snapshot = text;
-							const ok = replaceComposerText(composer, res.corrected);
-							applying = false;
-							if (ok) {
-								exposed.applied++;
-								state.ignored.add(normalizeForCompare(res.corrected));
-								state.lastChecked = normalizeForCompare(res.corrected);
-								showAppliedFlash(composer);
-								void snapshot; // Ctrl+Z restores this via the editor's own undo stack
+							const attempt = ++exposed.applyAttempts;
+							try {
+								const result = await replaceComposerText(
+									composer,
+									res.corrected,
+									text,
+									(diagnostic) => {
+										exposed.applyDiagnostics.push({ ...diagnostic, attempt });
+										if (exposed.applyDiagnostics.length > 50)
+											exposed.applyDiagnostics.shift();
+										void bridge
+											.call("apply-diagnostic", undefined, {
+												version: BUNDLE_VERSION,
+												attempt,
+												diagnostic,
+											})
+											.catch(() => undefined);
+									},
+								);
+								exposed.lastOutcome = `apply-${result}`;
+								if (result === "applied") {
+									exposed.applied++;
+									state.ignored.add(normalizeForCompare(composer.innerText));
+									state.lastChecked = normalizeForCompare(composer.innerText);
+									showAppliedFlash(composer);
+								} else if (result === "interrupted") {
+									if (composer.isConnected && !composer.innerText.trim())
+										showApplyError(
+											"Apply interrupted. Use Copy original to recover the saved draft.",
+										);
+									else hideSuggestion();
+								} else {
+									showApplyError(
+										result === "failed"
+											? "Apply failed. Use Copy original to recover the saved draft."
+											: "Could not apply safely. Draft preserved — use Copy instead.",
+									);
+								}
+							} finally {
+								applying = false;
 							}
 						},
 						onIgnore: () => {
@@ -107,6 +154,8 @@ export function startWatcher(bridge: Bridge): WatcherState {
 		const composer = isComposer(ev.target);
 		if (!composer) return;
 		activeComposer = composer;
+		if (applying) return;
+		hideSuggestion(); // a visible suggestion must never outlive its draft
 		if (!exposed.enabled) return;
 		setStatus("idle");
 		if (timer) clearTimeout(timer);

@@ -54,6 +54,51 @@ Caveats:
 - Always `focus()` the editor and place the caret before `execCommand`.
 - Never read back DOM state synchronously after `execCommand`; wait a frame.
 
+### Apply hardening (2026-10-19)
+
+An intermittent draft-clearing report could not be reproduced with synthetic
+single-line and multiline drafts. The old path ignored command failure and
+never verified the resulting draft, so it could show success after a bad edit.
+
+The current path validates the original draft at click time, focuses the editor,
+uses a Range scoped to that editor instead of document-wide `selectAll`, and
+checks the text after two frames (with a bounded background-window fallback).
+A mismatched edit is undone through native history, only if no input occurred
+in the meantime and the same editor remains focused. Failed recovery is shown
+as an error, never a successful Apply. Mouse Apply and suggestion display no
+longer steal composer focus.
+
+Live synthetic testing also found that multiline `insertText` can expand
+paragraph breaks during Quill reconciliation. Until a paragraph-preserving
+native edit path is validated, these mismatches deliberately roll back and
+offer Copy rather than silently changing the draft's structure.
+
+### Recovery and diagnostics (2026-10-21, bundle 3.1.0)
+
+- Apply takes a fresh, in-memory snapshot before editing and rejects a stale
+  suggestion. It releases its selection synchronously, before yielding, so a
+  subsequent keystroke cannot accidentally replace a still-selected draft.
+- Verification now waits two frames, 250 ms, and a further frame. Any input,
+  Send gesture, focus loss, or channel switch prevents automatic recovery.
+- On mismatch, Undo is verified. If it fails and the same focused, untouched
+  composer remains empty, one native insertion restores the snapshot. There is
+  no automatic retry of the correction. Failed recovery offers **Copy original**;
+  the backup exists only in the suggestion card's memory.
+- The Apply button is single-flight and shows **Applying…**. We deliberately do
+  not set `contenteditable=false` or call Quill `disable()`: disabling user edits
+  can also prevent native insertion, and swallowing keystrokes would lose input.
+  This guard does not lock Slack's internal asynchronous reconciliation.
+- Renderer diagnostics: `window.__sg.watcher.applyDiagnostics` (last 50 events).
+  Durable metadata: `journalctl --user -u slack-grammar.service -o cat --grep='"event":"apply"'`.
+  Detached daemons use `~/.local/state/slack-grammar/daemon.log` instead.
+  Fields include stage, outcome, version, attempt number, character counts,
+  elapsed time, empty/focused/connected flags, and interruption event type.
+  Never record text, hashes, HTML, channel information, or raw errors.
+- `shared/bundle-version.ts` must change with injected code. Rebuilding alone is
+  insufficient: the daemon loads its bundle at startup, and already-loaded
+  renderers skip equal versions. `bun run reinject` performs a graceful restart
+  and now verifies the expected version, not merely bridge connectivity.
+
 ## Injection side effects
 
 - Injected badge div appeared fine; no CSP interference for DOM manipulation.

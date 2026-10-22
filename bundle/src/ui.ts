@@ -3,7 +3,7 @@
 import type { DiffSeg } from "./diff.ts";
 
 export interface SuggestionActions {
-	onApply(): void;
+	onApply(): void | Promise<void>;
 	onIgnore(): void;
 	onDismiss(): void;
 }
@@ -44,6 +44,7 @@ const CSS = `
 .sgw .del { color: #ff7d92; text-decoration: line-through; }
 .sgw .ins { color: #7ddba3; font-weight: 600; }
 .sgw-flash { padding: 10px; color: #7ddba3; }
+.sgw-error { padding: 8px 10px; color: #ff7d92; }
 .sgw-glyph {
 	position: fixed; z-index: 2147483647; width: 9px; height: 9px; border-radius: 50%;
 	box-shadow: 0 0 6px currentColor;
@@ -88,7 +89,7 @@ function positionAbove(composer: HTMLElement, card: HTMLElement): void {
 }
 
 export function hideSuggestion(): void {
-	if (shadow) shadow.querySelectorAll(".sgw").forEach((e) => e.remove());
+	if (shadow) for (const card of shadow.querySelectorAll(".sgw")) card.remove();
 	host?.remove();
 	host = null;
 	shadow = null;
@@ -110,7 +111,11 @@ function renderDiff(container: HTMLElement, segs: DiffSeg[]): void {
 }
 
 /** Copy the corrected text; never throws — button label reflects the outcome. */
-async function copyToClipboard(text: string, btn: HTMLButtonElement): Promise<void> {
+async function copyToClipboard(
+	text: string,
+	btn: HTMLButtonElement,
+): Promise<void> {
+	const label = btn.textContent;
 	let ok = false;
 	try {
 		if (navigator.clipboard?.writeText) {
@@ -138,7 +143,7 @@ async function copyToClipboard(text: string, btn: HTMLButtonElement): Promise<vo
 	btn.textContent = ok ? "Copied" : "Copy failed";
 	btn.disabled = true;
 	setTimeout(() => {
-		btn.textContent = "Copy";
+		btn.textContent = label;
 		btn.disabled = false;
 	}, 1400);
 }
@@ -184,20 +189,61 @@ export function showSuggestion(opts: {
 	copy.className = "sgw-copy";
 	copy.title = "Copy corrected text";
 	copy.textContent = "Copy";
-	actions.append(apply, ignore, copy);
+	// The fallback lives only in this card's closure, never in logs/storage.
+	const copyOriginal = document.createElement("button");
+	copyOriginal.className = "sgw-copy-original";
+	copyOriginal.textContent = "Copy original";
+	copyOriginal.hidden = true;
+	copyOriginal.addEventListener(
+		"click",
+		() => void copyToClipboard(opts.original, copyOriginal),
+	);
+	actions.append(apply, ignore, copy, copyOriginal);
 
 	card.append(header, diff, actions);
 	root.append(card);
 	positionAbove(opts.composer, card);
 
-	// keep the composer focused so Ctrl+Z works right after Apply
+	// Mouse Apply must not move focus/selection into the shadow tree. Keyboard
+	// users can still Tab to the buttons; the apply path explicitly focuses Slack.
 	card.addEventListener("mousedown", (e) => {
-		if (!(e.target instanceof HTMLButtonElement)) e.preventDefault();
+		if (e.target === apply || !(e.target instanceof HTMLButtonElement))
+			e.preventDefault();
 	});
-	apply.addEventListener("click", opts.actions.onApply);
+	apply.addEventListener("click", async () => {
+		if (apply.disabled) return;
+		for (const button of [apply, ignore, copy, copyOriginal, close])
+			button.disabled = true;
+		apply.textContent = "Applying…";
+		try {
+			await opts.actions.onApply();
+		} finally {
+			for (const button of [apply, ignore, copy, copyOriginal, close])
+				button.disabled = false;
+			apply.textContent = "Apply fix";
+		}
+	});
 	ignore.addEventListener("click", opts.actions.onIgnore);
-	copy.addEventListener("click", () => void copyToClipboard(opts.corrected, copy));
-	apply.focus({ preventScroll: true });
+	copy.addEventListener(
+		"click",
+		() => void copyToClipboard(opts.corrected, copy),
+	);
+}
+
+export function showApplyError(message: string): void {
+	const card = shadow?.querySelector(".sgw");
+	if (!card) return;
+	const copyOriginal =
+		card.querySelector<HTMLButtonElement>(".sgw-copy-original");
+	if (copyOriginal) copyOriginal.hidden = false;
+	let error = card.querySelector<HTMLElement>(".sgw-error");
+	if (!error) {
+		error = document.createElement("div");
+		error.className = "sgw-error";
+		error.setAttribute("role", "alert");
+		card.append(error);
+	}
+	error.textContent = message;
 }
 
 export function showAppliedFlash(composer: HTMLElement): void {
